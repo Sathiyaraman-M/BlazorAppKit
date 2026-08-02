@@ -1,6 +1,6 @@
 namespace BlazorKit;
 
-internal sealed class NativeRootAdapter(NSView view) : INativeContainerAdapter
+internal sealed class NativeRootAdapter(NSView view) : INativeViewContainerAdapter
 {
     public NSView View { get; } = view;
 
@@ -12,24 +12,16 @@ internal sealed class NativeRootAdapter(NSView view) : INativeContainerAdapter
         // parameters belong to the component and are not native view properties.
     }
 
-    public void InsertChild(INativeAdapter child, int index)
+    public void AddChild(INativeViewAdapter child)
     {
-        if (child.NativeObject is not NSView childView)
-        {
-            throw new InvalidOperationException("The root host accepts only NSView adapters.");
-        }
-
-        childView.Frame = View.Bounds;
-        childView.AutoresizingMask = NSViewResizingMask.WidthSizable | NSViewResizingMask.HeightSizable;
-        View.AddSubview(childView);
+        child.View.Frame = View.Bounds;
+        child.View.AutoresizingMask = NSViewResizingMask.WidthSizable | NSViewResizingMask.HeightSizable;
+        View.AddSubview(child.View);
     }
 
-    public void RemoveChild(INativeAdapter child)
+    public void RemoveChild(INativeViewAdapter child)
     {
-        if (child.NativeObject is NSView childView)
-        {
-            childView.RemoveFromSuperview();
-        }
+        child.View.RemoveFromSuperview();
     }
 
     public void Dispose()

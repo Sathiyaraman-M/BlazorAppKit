@@ -14,22 +14,25 @@ public interface INativeAdapter : IDisposable
 /// <summary>
 /// Adapter contract for AppKit view-backed components.
 /// </summary>
-public interface INativeAdapter<out TView> : INativeAdapter
+public interface INativeViewAdapter : INativeAdapter
+{
+    NSView View { get; }
+}
+
+public interface INativeAdapter<out TView> : INativeViewAdapter
     where TView : NSView
 {
-    TView View { get; }
+    new TView View { get; }
 }
 
 /// <summary>
 /// Adapter contract for controls that own child views.
 /// </summary>
-public interface INativeContainerAdapter : INativeAdapter
+public interface INativeViewContainerAdapter : INativeAdapter
 {
-    NSView View { get; }
+    void AddChild(INativeViewAdapter child);
 
-    void InsertChild(INativeAdapter child, int index);
-
-    void RemoveChild(INativeAdapter child);
+    void RemoveChild(INativeViewAdapter child);
 }
 
 /// <summary>

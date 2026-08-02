@@ -9,6 +9,7 @@ internal abstract class NativeViewAdapter<TView>(TView view) : INativeAdapter<TV
 {
     public TView View { get; } = view;
 
+    NSView INativeViewAdapter.View => View;
     NSObject INativeAdapter.NativeObject => View;
 
     public abstract void SetParameter(string name, object? value);
@@ -78,15 +79,13 @@ internal sealed class ButtonAdapter : NativeViewAdapter<NSButton>
     }
 }
 
-internal sealed class VStackAdapter : NativeViewAdapter<NSStackView>, INativeContainerAdapter
+internal sealed class VStackAdapter : NativeViewAdapter<NSStackView>, INativeViewContainerAdapter
 {
     public VStackAdapter()
         : base(new NSStackView(CGRect.Empty))
     {
         View.Orientation = NSUserInterfaceLayoutOrientation.Vertical;
     }
-
-    NSView INativeContainerAdapter.View => View;
 
     public override void SetParameter(string name, object? value)
     {
@@ -96,22 +95,15 @@ internal sealed class VStackAdapter : NativeViewAdapter<NSStackView>, INativeCon
         }
     }
 
-    public void InsertChild(INativeAdapter child, int index)
+    public void AddChild(INativeViewAdapter child)
     {
-        if (child.NativeObject is not NSView view)
-        {
-            throw new InvalidOperationException("Only NSView adapters can be children of VStack.");
-        }
-
-        View.InsertArrangedSubview(view, (nint)index);
+        View.AddArrangedSubview(child.View);
     }
 
-    public void RemoveChild(INativeAdapter child)
+    public void RemoveChild(INativeViewAdapter child)
     {
-        if (child.NativeObject is NSView view)
-        {
-            View.RemoveArrangedSubview(view);
-            view.RemoveFromSuperview();
-        }
+        View.RemoveArrangedSubview(child.View);
+        child.View.RemoveFromSuperview();
     }
+
 }

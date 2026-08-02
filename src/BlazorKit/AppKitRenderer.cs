@@ -89,7 +89,7 @@ public class AppKitRenderer(
     private void ApplyComponentRenderTree(int componentId)
     {
         if (!_nodes.TryGetValue(componentId, out var parent) ||
-            parent.Adapter is not INativeContainerAdapter container)
+            parent.Adapter is not INativeViewContainerAdapter container)
         {
             return;
         }
@@ -102,13 +102,19 @@ public class AppKitRenderer(
         {
             var frame = frames.Array[frameIndex];
             var child = EnsureNode(parent, frame, frames.Array, frameIndex);
+            if (child.Adapter is not INativeViewAdapter childView)
+            {
+                throw new InvalidOperationException(
+                    $"Component '{frame.ComponentType.FullName}' produced an adapter that cannot be hosted in a view container.");
+            }
+
             seen.Add(child.ComponentId);
 
             if (child.Parent is null)
             {
                 child.Parent = parent;
                 parent.Children.Insert(siblingIndex, child);
-                container.InsertChild(child.Adapter, siblingIndex);
+                container.AddChild(childView);
             }
 
             siblingIndex++;
@@ -120,7 +126,10 @@ public class AppKitRenderer(
             if (!seen.Contains(child.ComponentId))
             {
                 parent.Children.RemoveAt(i);
-                container.RemoveChild(child.Adapter);
+                if (child.Adapter is INativeViewAdapter childView)
+                {
+                    container.RemoveChild(childView);
+                }
                 DisposeSubtree(child);
             }
         }
