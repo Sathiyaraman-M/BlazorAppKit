@@ -101,7 +101,7 @@ public class AppKitRenderer(
         foreach (var frameIndex in EnumerateComponentFrames(frames.Array, 0, frames.Count))
         {
             var frame = frames.Array[frameIndex];
-            var child = EnsureNode(parent, frame, frames.Array, frameIndex);
+            var child = EnsureNode(frame, frames.Array, frameIndex);
             if (child.Adapter is not INativeViewAdapter childView)
             {
                 throw new InvalidOperationException(
@@ -136,7 +136,6 @@ public class AppKitRenderer(
     }
 
     private NativeNode EnsureNode(
-        NativeNode parent,
         RenderTreeFrame frame,
         RenderTreeFrame[] frames,
         int frameIndex)
