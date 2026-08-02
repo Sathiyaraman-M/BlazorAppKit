@@ -1,3 +1,5 @@
+using BlazorKit.Components;
+
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BlazorKit;
