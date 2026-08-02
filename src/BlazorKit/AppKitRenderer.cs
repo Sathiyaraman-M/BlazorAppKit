@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace BlazorKit;
@@ -11,6 +12,7 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
 {
     private readonly ILogger<AppKitRenderer> _logger = loggerFactory.CreateLogger<AppKitRenderer>();
     private readonly AppKitDispatcher _dispatcher = new();
+    private readonly Dictionary<int, NativeNode> _nodes = [];
 
     public override Dispatcher Dispatcher => _dispatcher;
 
@@ -19,6 +21,11 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
     /// An AppKit host can use this to present an error UI or terminate the app.
     /// </summary>
     public event EventHandler<UnhandledExceptionEventArgs>? UnhandledException;
+
+    internal INativeAdapterResolver AdapterResolver { get; } = serviceProvider.GetService<INativeAdapterResolver>()
+        ?? new NativeAdapterResolver(serviceProvider);
+
+    internal IReadOnlyDictionary<int, NativeNode> Nodes => _nodes;
 
     protected override void HandleException(Exception exception)
     {
