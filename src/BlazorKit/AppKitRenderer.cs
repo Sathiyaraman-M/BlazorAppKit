@@ -10,10 +10,7 @@ namespace BlazorKit;
 /// <summary>
 /// Blazor renderer whose renderer work is serialized onto AppKit's main thread.
 /// </summary>
-public class AppKitRenderer(
-    IServiceProvider serviceProvider,
-    ILoggerFactory loggerFactory,
-    Action<RenderBatch>? displayUpdater = null) : Renderer(serviceProvider, loggerFactory)
+public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory) : Renderer(serviceProvider, loggerFactory)
 {
     private readonly ILogger<AppKitRenderer> _logger = loggerFactory.CreateLogger<AppKitRenderer>();
     private readonly AppKitDispatcher _dispatcher = new();
@@ -80,9 +77,6 @@ public class AppKitRenderer(
             DisposeNode(renderBatch.DisposedComponentIDs.Array[i]);
         }
 
-        // RenderBatch is a view over renderer-owned memory, so this callback
-        // must run before UpdateDisplayAsync returns.
-        displayUpdater?.Invoke(renderBatch);
         return Task.CompletedTask;
     }
 
