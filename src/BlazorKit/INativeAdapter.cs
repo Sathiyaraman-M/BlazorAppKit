@@ -23,8 +23,10 @@ public interface INativeAdapter<out TView> : INativeAdapter
 /// <summary>
 /// Adapter contract for controls that own child views.
 /// </summary>
-public interface INativeContainerAdapter : INativeAdapter<NSView>
+public interface INativeContainerAdapter : INativeAdapter
 {
+    NSView View { get; }
+
     void InsertChild(INativeAdapter child, int index);
 
     void RemoveChild(INativeAdapter child);

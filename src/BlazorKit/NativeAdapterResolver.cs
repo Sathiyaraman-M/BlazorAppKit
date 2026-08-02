@@ -16,6 +16,15 @@ public sealed class NativeAdapterResolver(IServiceProvider services)
         _registrations[typeof(TComponent)] = typeof(TAdapter);
     }
 
+    public static NativeAdapterResolver CreateDefault(IServiceProvider services)
+    {
+        var resolver = new NativeAdapterResolver(services);
+        resolver.Register<Label, LabelAdapter>();
+        resolver.Register<Button, ButtonAdapter>();
+        resolver.Register<VStack, VStackAdapter>();
+        return resolver;
+    }
+
     public INativeAdapter Create(Type componentType)
     {
         ArgumentNullException.ThrowIfNull(componentType);
