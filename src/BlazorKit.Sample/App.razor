@@ -1,0 +1,16 @@
+@using BlazorKit
+
+<VStack Spacing="12">
+    <Label Text="BlazorKit Counter" />
+    <Label Text="@($"Current count: {currentCount}")" />
+    <Button Text="Increment" OnClick="Increment" />
+</VStack>
+
+@code {
+    private int currentCount;
+
+    private void Increment()
+    {
+        currentCount++;
+    }
+}

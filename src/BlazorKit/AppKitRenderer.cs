@@ -44,17 +44,10 @@ public class AppKitRenderer(
         {
             var component = InstantiateComponent(typeof(TComponent));
             var componentId = AssignRootComponentId(component);
-            var adapter = AdapterResolver.Create(typeof(TComponent));
+            var adapter = new NativeRootAdapter(host);
             var node = new NativeNode(componentId, adapter);
 
-            if (adapter.NativeObject is not NSView view)
-            {
-                throw new InvalidOperationException(
-                    $"The root component '{typeof(TComponent).FullName}' does not produce an NSView.");
-            }
-
             _nodes.Add(componentId, node);
-            host.AddSubview(view);
 
             await RenderRootComponentAsync(componentId, parameters);
             return componentId;
