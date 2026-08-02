@@ -48,7 +48,28 @@ internal sealed class AppKitDispatcher : Dispatcher
     {
         ArgumentNullException.ThrowIfNull(workItem);
 
-        return InvokeAsync(async () => await workItem().ConfigureAwait(true));
+        if (CheckAccess())
+        {
+            return workItem();
+        }
+
+        var completion = new TaskCompletionSource<object?>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+
+        _invoker.BeginInvokeOnMainThread(async () =>
+        {
+            try
+            {
+                await workItem().ConfigureAwait(true);
+                completion.SetResult(null);
+            }
+            catch (Exception exception)
+            {
+                completion.SetException(exception);
+            }
+        });
+
+        return completion.Task;
     }
 
     public override Task<TResult> InvokeAsync<TResult>(Func<TResult> workItem)
@@ -89,6 +110,26 @@ internal sealed class AppKitDispatcher : Dispatcher
     {
         ArgumentNullException.ThrowIfNull(workItem);
 
-        return InvokeAsync(async () => await workItem().ConfigureAwait(true));
+        if (CheckAccess())
+        {
+            return workItem();
+        }
+
+        var completion = new TaskCompletionSource<TResult>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+
+        _invoker.BeginInvokeOnMainThread(async () =>
+        {
+            try
+            {
+                completion.SetResult(await workItem().ConfigureAwait(true));
+            }
+            catch (Exception exception)
+            {
+                completion.SetException(exception);
+            }
+        });
+
+        return completion.Task;
     }
 }
