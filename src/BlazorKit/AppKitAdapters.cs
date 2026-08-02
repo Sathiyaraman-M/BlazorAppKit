@@ -107,3 +107,31 @@ internal sealed class VStackAdapter : NativeViewAdapter<NSStackView>, INativeVie
     }
 
 }
+
+internal sealed class HStackAdapter : NativeViewAdapter<NSStackView>, INativeViewContainerAdapter
+{
+    public HStackAdapter()
+        : base(new NSStackView(CGRect.Empty))
+    {
+        View.Orientation = NSUserInterfaceLayoutOrientation.Horizontal;
+    }
+
+    public override void SetParameter(string name, object? value)
+    {
+        if (name == nameof(HStack.Spacing) && value is double spacing)
+        {
+            View.Spacing = (NFloat)spacing;
+        }
+    }
+
+    public void AddChild(INativeViewAdapter child)
+    {
+        View.AddArrangedSubview(child.View);
+    }
+
+    public void RemoveChild(INativeViewAdapter child)
+    {
+        View.RemoveArrangedSubview(child.View);
+        child.View.RemoveFromSuperview();
+    }
+}

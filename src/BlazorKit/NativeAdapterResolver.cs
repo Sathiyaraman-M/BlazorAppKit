@@ -22,6 +22,7 @@ public sealed class NativeAdapterResolver(IServiceProvider services)
         resolver.Register<Label, LabelAdapter>();
         resolver.Register<Button, ButtonAdapter>();
         resolver.Register<VStack, VStackAdapter>();
+        resolver.Register<HStack, HStackAdapter>();
         return resolver;
     }
 

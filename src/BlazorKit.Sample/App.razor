@@ -2,8 +2,10 @@
 
 <VStack Spacing="12">
     <Label Text="BlazorKit Counter" />
-    <Label Text="@($"Current count: {currentCount}")" />
-    <Button Text="Increment" OnClick="Increment" />
+    <HStack Spacing="8">
+        <Label Text="@($"Current count: {currentCount}")" />
+        <Button Text="Increment" OnClick="Increment" />
+    </HStack>
 </VStack>
 
 @code {
