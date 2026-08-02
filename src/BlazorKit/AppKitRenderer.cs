@@ -34,8 +34,14 @@ public class AppKitRenderer(
     /// </summary>
     public Task<int> MountRootComponentAsync<
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(
+        NSView host)
+        where TComponent : IComponent =>
+        MountRootComponentAsync<TComponent>(host, ParameterView.Empty);
+
+    public Task<int> MountRootComponentAsync<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(
         NSView host,
-        ParameterView parameters = default)
+        ParameterView parameters)
         where TComponent : IComponent
     {
         ArgumentNullException.ThrowIfNull(host);
