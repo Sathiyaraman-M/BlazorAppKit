@@ -1,4 +1,4 @@
-namespace BlazorKit;
+namespace BlazorKit.Abstractions;
 
 public interface INativeViewContainer
 {

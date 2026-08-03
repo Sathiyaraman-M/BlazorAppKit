@@ -1,3 +1,5 @@
+using BlazorKit.Abstractions;
+
 namespace BlazorKit.Components.Base;
 
 internal abstract class NativeViewAdapter<TView>(TView view) : INativeViewAdapter<TView>

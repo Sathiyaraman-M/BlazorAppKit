@@ -1,3 +1,5 @@
+using BlazorKit.Abstractions;
+
 namespace BlazorKit;
 
 internal sealed class NativeViewHost(NSView view) : INativeViewContainer
