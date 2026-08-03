@@ -22,7 +22,7 @@ public sealed class HStack : ComponentBase
     }
 }
 
-internal sealed class HStackAdapter : NativeViewAdapter<NSStackView>, INativeViewContainerAdapter
+internal sealed class HStackAdapter : NativeViewAdapter<NSStackView>, INativeViewContainer
 {
     public HStackAdapter()
         : base(new NSStackView(CGRect.Empty))
@@ -38,11 +38,17 @@ internal sealed class HStackAdapter : NativeViewAdapter<NSStackView>, INativeVie
         }
     }
 
-    public void AddChild(INativeViewAdapter child) => View.AddArrangedSubview(child.View);
-
-    public void RemoveChild(INativeViewAdapter child)
+    public void SetChildren(IReadOnlyList<INativeViewAdapter> children)
     {
-        View.RemoveArrangedSubview(child.View);
-        child.View.RemoveFromSuperview();
+        foreach (var child in View.ArrangedSubviews)
+        {
+            View.RemoveArrangedSubview(child);
+            child.RemoveFromSuperview();
+        }
+
+        foreach (var child in children)
+        {
+            View.AddArrangedSubview(child.View);
+        }
     }
 }

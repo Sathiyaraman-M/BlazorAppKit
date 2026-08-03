@@ -20,9 +20,9 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
 
     public event EventHandler<UnhandledExceptionEventArgs>? UnhandledException;
 
-    internal INativeAdapterResolver AdapterResolver { get; } =
-        serviceProvider.GetService<INativeAdapterResolver>()
-        ?? NativeAdapterResolver.CreateDefault(serviceProvider);
+    internal INativeViewAdapterResolver AdapterResolver { get; } =
+        serviceProvider.GetService<INativeViewAdapterResolver>()
+        ?? NativeViewAdapterResolver.CreateDefault(serviceProvider);
 
     internal IReadOnlyDictionary<int, NativeNode> Nodes => _nodes;
 
@@ -47,8 +47,7 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
         {
             var component = InstantiateComponent(typeof(TComponent));
             var componentId = AssignRootComponentId(component);
-            var adapter = new NativeRootAdapter(host);
-            var node = new NativeNode(componentId, adapter);
+            var node = new NativeNode(componentId, adapter: null, container: new NativeViewHost(host));
 
             _nodes.Add(componentId, node);
 
@@ -83,35 +82,42 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
     private void ApplyComponentRenderTree(int componentId)
     {
         if (!_nodes.TryGetValue(componentId, out var parent) ||
-            parent.Adapter is not INativeViewContainerAdapter container)
+            parent.Container is not INativeViewContainer container)
         {
             return;
         }
 
         var frames = GetCurrentRenderTreeFrames(componentId);
         var seen = new HashSet<int>();
-        var siblingIndex = 0;
+        var desiredChildren = new List<NativeNode>();
 
         foreach (var frameIndex in EnumerateComponentFrames(frames.Array, 0, frames.Count))
         {
             var frame = frames.Array[frameIndex];
             var child = EnsureNode(frame, frames.Array, frameIndex);
-            if (child.Adapter is not INativeViewAdapter childView)
-            {
-                throw new InvalidOperationException(
-                    $"Component '{frame.ComponentType.FullName}' produced an adapter that cannot be hosted in a view container.");
-            }
+            var childView = child.Adapter!;
 
             seen.Add(child.ComponentId);
 
             if (child.Parent is null)
             {
                 child.Parent = parent;
-                parent.Children.Insert(siblingIndex, child);
-                container.AddChild(childView);
             }
 
-            siblingIndex++;
+            desiredChildren.Add(child);
+        }
+
+        var childrenChanged = parent.Children.Count != desiredChildren.Count;
+        if (!childrenChanged)
+        {
+            for (var i = 0; i < desiredChildren.Count; i++)
+            {
+                if (parent.Children[i].ComponentId != desiredChildren[i].ComponentId)
+                {
+                    childrenChanged = true;
+                    break;
+                }
+            }
         }
 
         for (var i = parent.Children.Count - 1; i >= 0; i--)
@@ -120,12 +126,16 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
             if (!seen.Contains(child.ComponentId))
             {
                 parent.Children.RemoveAt(i);
-                if (child.Adapter is INativeViewAdapter childView)
-                {
-                    container.RemoveChild(childView);
-                }
                 DisposeSubtree(child);
             }
+        }
+
+        parent.Children.Clear();
+        parent.Children.AddRange(desiredChildren);
+
+        if (childrenChanged)
+        {
+            container.SetChildren([.. desiredChildren.Select(child => child.Adapter!)]);
         }
     }
 
@@ -136,7 +146,7 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
     {
         if (_nodes.TryGetValue(frame.ComponentId, out var existing))
         {
-            ApplyParameters(existing.Adapter, frames, frameIndex + 1, frame.ComponentSubtreeLength - 1);
+            ApplyParameters(existing.Adapter!, frames, frameIndex + 1, frame.ComponentSubtreeLength - 1);
             return existing;
         }
 
@@ -181,7 +191,7 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
     }
 
     private static void ApplyParameters(
-        INativeAdapter adapter,
+        INativeViewAdapter adapter,
         RenderTreeFrame[] frames,
         int start,
         int count)
@@ -215,6 +225,6 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
 
         node.Children.Clear();
         _nodes.Remove(node.ComponentId);
-        node.Adapter.Dispose();
+        node.Adapter?.Dispose();
     }
 }

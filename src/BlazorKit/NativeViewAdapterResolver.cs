@@ -7,20 +7,20 @@ namespace BlazorKit;
 /// <summary>
 /// Resolves the native adapter for a Blazor component and lets DI construct it.
 /// </summary>
-public sealed class NativeAdapterResolver(IServiceProvider services)
-    : INativeAdapterResolver
+public sealed class NativeViewAdapterResolver(IServiceProvider services)
+    : INativeViewAdapterResolver
 {
     private readonly Dictionary<Type, Type> _registrations = [];
 
     public void Register<TComponent, TAdapter>()
-        where TAdapter : class, INativeAdapter
+        where TAdapter : class, INativeViewAdapter
     {
         _registrations[typeof(TComponent)] = typeof(TAdapter);
     }
 
-    public static NativeAdapterResolver CreateDefault(IServiceProvider services)
+    public static NativeViewAdapterResolver CreateDefault(IServiceProvider services)
     {
-        var resolver = new NativeAdapterResolver(services);
+        var resolver = new NativeViewAdapterResolver(services);
         resolver.Register<Label, LabelAdapter>();
         resolver.Register<TextField, TextFieldAdapter>();
         resolver.Register<Button, ButtonAdapter>();
@@ -29,7 +29,7 @@ public sealed class NativeAdapterResolver(IServiceProvider services)
         return resolver;
     }
 
-    public INativeAdapter Create(Type componentType)
+    public INativeViewAdapter Create(Type componentType)
     {
         ArgumentNullException.ThrowIfNull(componentType);
 
@@ -39,6 +39,6 @@ public sealed class NativeAdapterResolver(IServiceProvider services)
                 $"No native AppKit adapter is registered for component '{componentType.FullName}'.");
         }
 
-        return (INativeAdapter)ActivatorUtilities.CreateInstance(services, adapterType);
+        return (INativeViewAdapter)ActivatorUtilities.CreateInstance(services, adapterType);
     }
 }
