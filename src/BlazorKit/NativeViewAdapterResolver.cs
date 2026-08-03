@@ -9,7 +9,6 @@ namespace BlazorKit;
 /// Resolves the native adapter for a Blazor component and lets DI construct it.
 /// </summary>
 public sealed class NativeViewAdapterResolver(IServiceProvider services)
-    : INativeViewAdapterResolver
 {
     private readonly Dictionary<Type, Type> _registrations = [];
 
