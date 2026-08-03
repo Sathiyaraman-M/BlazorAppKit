@@ -1,6 +1,4 @@
-using BlazorKit.Abstractions;
-
-namespace BlazorKit;
+namespace BlazorKit.Abstractions;
 
 /// <summary>
 /// Retained relationship between a Blazor component and its native peer.
