@@ -22,6 +22,7 @@ public sealed class NativeAdapterResolver(IServiceProvider services)
     {
         var resolver = new NativeAdapterResolver(services);
         resolver.Register<Label, LabelAdapter>();
+        resolver.Register<TextField, TextFieldAdapter>();
         resolver.Register<Button, ButtonAdapter>();
         resolver.Register<VStack, VStackAdapter>();
         resolver.Register<HStack, HStackAdapter>();

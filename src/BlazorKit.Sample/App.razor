@@ -6,10 +6,16 @@
         <Label Text="@($"Current count: {currentCount}")" />
         <Button Text="Increment" OnClick="Increment" />
     </HStack>
+    <HStack Spacing="8">
+        <Label Text="Name:" />
+        <TextField @bind-Value="name" />
+    </HStack>
+    <Label Text="@name" />
 </VStack>
 
 @code {
     private int currentCount;
+    private string? name;
 
     private void Increment()
     {
