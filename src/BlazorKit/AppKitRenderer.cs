@@ -101,10 +101,7 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
 
             seen.Add(child.ComponentId);
 
-            if (child.Parent is null)
-            {
-                child.Parent = parent;
-            }
+            child.Parent ??= parent;
 
             desiredChildren.Add(child);
         }
