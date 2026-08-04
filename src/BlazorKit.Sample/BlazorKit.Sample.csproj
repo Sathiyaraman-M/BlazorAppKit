@@ -12,6 +12,6 @@
     <ProjectReference Include="../BlazorKit/BlazorKit.csproj" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <Content Remove="**/*.razor" />
-    <RazorComponent Include="App.razor" />
+    <RazorComponent Include="**/*.razor" />
   </ItemGroup>
 </Project>
