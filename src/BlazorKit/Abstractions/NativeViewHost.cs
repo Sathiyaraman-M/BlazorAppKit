@@ -13,11 +13,9 @@ internal sealed class NativeViewHost(NSView view) : INativeContainer
 
         foreach (var child in children)
         {
-            if (child.NativeObject is not NSView nativeView)
-                throw new NotSupportedException("The native host can only contain NSView instances.");
-            nativeView.Frame = View.Bounds;
-            nativeView.AutoresizingMask = NSViewResizingMask.WidthSizable | NSViewResizingMask.HeightSizable;
-            View.AddSubview(nativeView);
+            child.View.Frame = View.Bounds;
+            child.View.AutoresizingMask = NSViewResizingMask.WidthSizable | NSViewResizingMask.HeightSizable;
+            View.AddSubview(child.View);
         }
     }
 }

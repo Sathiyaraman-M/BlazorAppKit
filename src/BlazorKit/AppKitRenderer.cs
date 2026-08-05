@@ -22,9 +22,9 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
 
     public event EventHandler<UnhandledExceptionEventArgs>? UnhandledException;
 
-    internal NativeViewAdapterResolver AdapterResolver { get; } =
-        serviceProvider.GetService<NativeViewAdapterResolver>()
-        ?? NativeViewAdapterResolver.CreateDefault(serviceProvider);
+    internal NativeAdapterResolver AdapterResolver { get; } =
+        serviceProvider.GetService<NativeAdapterResolver>()
+        ?? NativeAdapterResolver.CreateDefault(serviceProvider);
 
     internal IReadOnlyDictionary<int, NativeNode> Nodes => _nodes;
 
