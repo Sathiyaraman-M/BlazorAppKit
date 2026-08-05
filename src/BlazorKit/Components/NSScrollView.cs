@@ -36,6 +36,12 @@ internal sealed class NSScrollViewAdapter : ViewAdapter<AppKit.NSScrollView>, IV
 
     public void SetChildren(IReadOnlyList<IViewAdapter> children)
     {
-        View.DocumentView = children.FirstOrDefault()?.View;
+        var view = children[0]?.View;
+        View.DocumentView = view;
+        if (view is not null)
+        {
+            view.Frame = View.Bounds;
+            view.AutoresizingMask = NSViewResizingMask.WidthSizable | NSViewResizingMask.HeightSizable;
+        }
     }
 }
