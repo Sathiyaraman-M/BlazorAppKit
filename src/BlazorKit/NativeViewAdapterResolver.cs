@@ -8,12 +8,12 @@ namespace BlazorKit;
 /// <summary>
 /// Resolves the native adapter for a Blazor component and lets DI construct it.
 /// </summary>
-public sealed class NativeViewAdapterResolver(IServiceProvider services)
+internal sealed class NativeViewAdapterResolver(IServiceProvider services)
 {
     private readonly Dictionary<Type, Type> _registrations = [];
 
     public void Register<TComponent, TAdapter>()
-        where TAdapter : class, INativeViewAdapter
+        where TAdapter : class, INativeAdapter
     {
         _registrations[typeof(TComponent)] = typeof(TAdapter);
     }
@@ -21,6 +21,12 @@ public sealed class NativeViewAdapterResolver(IServiceProvider services)
     public static NativeViewAdapterResolver CreateDefault(IServiceProvider services)
     {
         var resolver = new NativeViewAdapterResolver(services);
+        resolver.Register<BlazorKit.Components.NSTextField, NSTextFieldAdapter>();
+        resolver.Register<BlazorKit.Components.NSButton, NSButtonAdapter>();
+        resolver.Register<BlazorKit.Components.NSStackView, NSStackViewAdapter>();
+        resolver.Register<BlazorKit.Components.NSSlider, NSSliderAdapter>();
+        resolver.Register<BlazorKit.Components.NSProgressIndicator, NSProgressIndicatorAdapter>();
+        resolver.Register<BlazorKit.Components.NSScrollView, NSScrollViewAdapter>();
         resolver.Register<Label, LabelAdapter>();
         resolver.Register<TextField, TextFieldAdapter>();
         resolver.Register<Button, ButtonAdapter>();
@@ -29,7 +35,7 @@ public sealed class NativeViewAdapterResolver(IServiceProvider services)
         return resolver;
     }
 
-    public INativeViewAdapter Create(Type componentType)
+    public INativeAdapter Create(Type componentType)
     {
         ArgumentNullException.ThrowIfNull(componentType);
 
@@ -39,6 +45,6 @@ public sealed class NativeViewAdapterResolver(IServiceProvider services)
                 $"No native AppKit adapter is registered for component '{componentType.FullName}'.");
         }
 
-        return (INativeViewAdapter)ActivatorUtilities.CreateInstance(services, adapterType);
+        return (INativeAdapter)ActivatorUtilities.CreateInstance(services, adapterType);
     }
 }

@@ -1,17 +1,20 @@
 @using BlazorKit.Components
+@using AppKit
 
-<VStack Spacing="12">
-    <Label Text="BlazorKit Counter" />
-    <HStack Spacing="8">
-        <Label Text="@($"Current count: {currentCount}")" />
-        <Button Text="Increment" OnClick="Increment" />
-    </HStack>
-    <HStack Spacing="8">
-        <Label Text="Name:" />
-        <TextField @bind-Value="name" />
-    </HStack>
-    <Label Text="@name" />
-</VStack>
+<NSScrollView HasVerticalScroller="true">
+    <NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Vertical" Spacing="12">
+        <NSTextField StringValue="BlazorKit Counter" IsEditable="false" IsBordered="false" DrawsBackground="false" />
+        <NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Horizontal" Spacing="8">
+            <NSTextField StringValue="@($"Current count: {currentCount}")" IsEditable="false" IsBordered="false" DrawsBackground="false" />
+            <NSButton Title="Increment" Activated="Increment" />
+        </NSStackView>
+        <NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Horizontal" Spacing="8">
+            <NSTextField StringValue="Name:" IsEditable="false" IsBordered="false" DrawsBackground="false" />
+            <NSTextField @bind-StringValue="name" IsEditable="true" IsBordered="true" />
+        </NSStackView>
+        <NSTextField StringValue="@name" IsEditable="false" IsBordered="false" DrawsBackground="false" />
+    </NSStackView>
+</NSScrollView>
 
 @code {
     private int currentCount;

@@ -11,29 +11,25 @@ public sealed class Button : ComponentBase
     [Parameter] public EventCallback OnClick { get; set; }
 }
 
-internal sealed class ButtonAdapter : NativeViewAdapter<NSButton>
+internal sealed class ButtonAdapter : NativeViewAdapter<AppKit.NSButton>
 {
     private EventCallback _onClick;
 
     public ButtonAdapter()
-        : base(new NSButton(CGRect.Empty))
+        : base(new AppKit.NSButton(CGRect.Empty))
     {
         View.Activated += OnActivated;
     }
 
-    public override void SetParameter(string name, object? value)
+    public override void ApplyParameters(ParameterView parameters)
     {
-        switch (name)
+        foreach (var parameter in parameters)
         {
-            case nameof(Button.Text):
-                View.Title = value as string ?? string.Empty;
-                break;
-            case nameof(Button.OnClick):
-                if (value is EventCallback callback)
-                {
-                    _onClick = callback;
-                }
-                break;
+            switch (parameter.Name)
+            {
+                case nameof(Button.Text): View.Title = parameter.Value as string ?? string.Empty; break;
+                case nameof(Button.OnClick) when parameter.Value is EventCallback callback: _onClick = callback; break;
+            }
         }
     }
 

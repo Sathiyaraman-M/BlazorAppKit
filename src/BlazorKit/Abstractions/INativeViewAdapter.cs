@@ -1,13 +1,27 @@
 namespace BlazorKit.Abstractions;
 
-public interface INativeViewAdapter : IDisposable
-{
-    NSView View { get; }
+using Microsoft.AspNetCore.Components;
 
-    void SetParameter(string name, object? value);
+internal interface INativeAdapter : IDisposable
+{
+    NSObject NativeObject { get; }
+
+    void ApplyParameters(ParameterView parameters);
 }
 
-public interface INativeViewAdapter<out TView> : INativeViewAdapter
+internal interface INativeAdapter<out TNative> : INativeAdapter
+    where TNative : NSObject
+{
+    new TNative NativeObject { get; }
+}
+
+// Compatibility aliases for the original renderer vocabulary.
+internal interface INativeViewAdapter : INativeAdapter
+{
+    NSView View { get; }
+}
+
+internal interface INativeViewAdapter<out TView> : INativeViewAdapter
     where TView : NSView
 {
     new TView View { get; }

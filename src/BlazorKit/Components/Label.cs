@@ -9,10 +9,10 @@ public sealed class Label : ComponentBase
     [Parameter] public string? Text { get; set; }
 }
 
-internal sealed class LabelAdapter : NativeViewAdapter<NSTextField>
+internal sealed class LabelAdapter : NativeViewAdapter<AppKit.NSTextField>
 {
     public LabelAdapter()
-        : base(new NSTextField(CGRect.Empty))
+        : base(new AppKit.NSTextField(CGRect.Empty))
     {
         View.Editable = false;
         View.Selectable = false;
@@ -20,11 +20,12 @@ internal sealed class LabelAdapter : NativeViewAdapter<NSTextField>
         View.DrawsBackground = false;
     }
 
-    public override void SetParameter(string name, object? value)
+    public override void ApplyParameters(ParameterView parameters)
     {
-        if (name == nameof(Label.Text))
+        foreach (var parameter in parameters)
         {
-            View.StringValue = value as string ?? string.Empty;
+            if (parameter.Name == nameof(Label.Text))
+                View.StringValue = parameter.Value as string ?? string.Empty;
         }
     }
 }

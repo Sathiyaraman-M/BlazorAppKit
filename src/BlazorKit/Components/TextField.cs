@@ -14,23 +14,25 @@ public sealed class TextField : ComponentBase
     [Parameter] public EventCallback<string?> ValueChanged { get; set; }
 }
 
-internal sealed class TextFieldAdapter : NativeViewAdapter<NSTextField>
+internal sealed class TextFieldAdapter : NativeViewAdapter<AppKit.NSTextField>
 {
     private EventCallback<string?> _valueChanged;
     private bool _updatingValue;
 
     public TextFieldAdapter()
-        : base(new NSTextField(CGRect.Empty))
+        : base(new AppKit.NSTextField(CGRect.Empty))
     {
         View.Changed += OnChanged;
     }
 
-    public override void SetParameter(string name, object? value)
+    public override void ApplyParameters(ParameterView parameters)
     {
-        switch (name)
+        foreach (var parameter in parameters)
         {
+            switch (parameter.Name)
+            {
             case nameof(TextField.Value):
-                var stringValue = value as string ?? string.Empty;
+                var stringValue = parameter.Value as string ?? string.Empty;
                 if (View.StringValue != stringValue)
                 {
                     _updatingValue = true;
@@ -40,12 +42,13 @@ internal sealed class TextFieldAdapter : NativeViewAdapter<NSTextField>
 
                 break;
             case nameof(TextField.ValueChanged):
-                if (value is EventCallback<string?> callback)
+                if (parameter.Value is EventCallback<string?> callback)
                 {
                     _valueChanged = callback;
                 }
 
                 break;
+            }
         }
     }
 

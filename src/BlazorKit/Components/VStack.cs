@@ -23,23 +23,24 @@ public sealed class VStack : ComponentBase
     }
 }
 
-internal sealed class VStackAdapter : NativeViewAdapter<NSStackView>, INativeViewContainer
+internal sealed class VStackAdapter : NativeViewAdapter<AppKit.NSStackView>, INativeContainer
 {
     public VStackAdapter()
-        : base(new NSStackView(CGRect.Empty))
+        : base(new AppKit.NSStackView(CGRect.Empty))
     {
         View.Orientation = NSUserInterfaceLayoutOrientation.Vertical;
     }
 
-    public override void SetParameter(string name, object? value)
+    public override void ApplyParameters(ParameterView parameters)
     {
-        if (name == nameof(VStack.Spacing) && value is double spacing)
+        foreach (var parameter in parameters)
         {
-            View.Spacing = (NFloat)spacing;
+            if (parameter.Name == nameof(VStack.Spacing) && parameter.Value is double spacing)
+                View.Spacing = (NFloat)spacing;
         }
     }
 
-    public void SetChildren(IReadOnlyList<INativeViewAdapter> children)
+    public void SetChildren(IReadOnlyList<INativeAdapter> children)
     {
         foreach (var child in View.ArrangedSubviews)
         {
@@ -49,7 +50,9 @@ internal sealed class VStackAdapter : NativeViewAdapter<NSStackView>, INativeVie
 
         foreach (var child in children)
         {
-            View.AddArrangedSubview(child.View);
+            if (child.NativeObject is not NSView nativeView)
+                throw new NotSupportedException("VStack children must be NSView instances.");
+            View.AddArrangedSubview(nativeView);
         }
     }
 }

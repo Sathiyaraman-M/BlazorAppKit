@@ -84,7 +84,7 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
     private void ApplyComponentRenderTree(int componentId)
     {
         if (!_nodes.TryGetValue(componentId, out var parent) ||
-            parent.Container is not INativeViewContainer container)
+            parent.Container is not INativeContainer container)
         {
             return;
         }
@@ -97,8 +97,6 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
         {
             var frame = frames.Array[frameIndex];
             var child = EnsureNode(frame, frames.Array, frameIndex);
-            var childView = child.Adapter!;
-
             seen.Add(child.ComponentId);
 
             child.Parent ??= parent;
@@ -134,7 +132,7 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
 
         if (childrenChanged)
         {
-            container.SetChildren([.. desiredChildren.Select(child => child.Adapter!)]);
+            container.SetChildren([.. desiredChildren.Select(child => child.Adapter!).Cast<INativeAdapter>()]);
         }
     }
 
@@ -190,20 +188,23 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
     }
 
     private static void ApplyParameters(
-        INativeViewAdapter adapter,
+        INativeAdapter adapter,
         RenderTreeFrame[] frames,
         int start,
         int count)
     {
+        var values = new Dictionary<string, object?>(StringComparer.Ordinal);
         var end = Math.Min(start + count, frames.Length);
         for (var index = start; index < end; index++)
         {
             var frame = frames[index];
             if (frame.FrameType == RenderTreeFrameType.Attribute)
             {
-                adapter.SetParameter(frame.AttributeName, frame.AttributeValue);
+                values[frame.AttributeName] = frame.AttributeValue;
             }
         }
+
+        adapter.ApplyParameters(ParameterView.FromDictionary(values));
     }
 
     private void DisposeNode(int componentId)
