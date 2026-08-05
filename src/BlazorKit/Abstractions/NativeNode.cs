@@ -5,14 +5,14 @@ namespace BlazorKit.Abstractions;
 /// </summary>
 internal sealed class NativeNode(
     int componentId,
-    INativeAdapter? adapter,
-    INativeContainer? container = null)
+    IViewAdapter? adapter,
+    IViewContainer? container = null)
 {
     public int ComponentId { get; } = componentId;
 
-    public INativeAdapter? Adapter { get; } = adapter;
+    public IViewAdapter? Adapter { get; } = adapter;
 
-    public INativeContainer? Container { get; } = container ?? adapter as INativeContainer;
+    public IViewContainer? Container { get; } = container ?? adapter as IViewContainer;
 
     public NativeNode? Parent { get; set; }
 

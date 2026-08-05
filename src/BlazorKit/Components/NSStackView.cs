@@ -20,7 +20,7 @@ public sealed class NSStackView : ComponentBase
     }
 }
 
-internal sealed class NSStackViewAdapter : NativeAdapter<AppKit.NSStackView>, INativeContainer
+internal sealed class NSStackViewAdapter : ViewAdapter<AppKit.NSStackView>, IViewContainer
 {
     public NSStackViewAdapter() : base(new AppKit.NSStackView(CGRect.Empty)) { }
 
@@ -36,7 +36,7 @@ internal sealed class NSStackViewAdapter : NativeAdapter<AppKit.NSStackView>, IN
         }
     }
 
-    public void SetChildren(IReadOnlyList<INativeAdapter> children)
+    public void SetChildren(IReadOnlyList<IViewAdapter> children)
     {
         foreach (var child in View.ArrangedSubviews)
         {

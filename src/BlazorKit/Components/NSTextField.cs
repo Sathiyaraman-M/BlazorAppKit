@@ -18,7 +18,7 @@ public sealed class NSTextField : ComponentBase
     protected override void BuildRenderTree(RenderTreeBuilder builder) { }
 }
 
-internal sealed class NSTextFieldAdapter : NativeAdapter<AppKit.NSTextField>, INativeValueAdapter<string?>
+internal sealed class NSTextFieldAdapter : ViewAdapter<AppKit.NSTextField>, IValueAdapter<string?>
 {
     private EventCallback<string?> _stringValueChanged;
     private bool _updating;

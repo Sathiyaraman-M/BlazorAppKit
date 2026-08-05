@@ -16,7 +16,7 @@ public sealed class NSProgressIndicator : ComponentBase
     protected override void BuildRenderTree(RenderTreeBuilder builder) { }
 }
 
-internal sealed class NSProgressIndicatorAdapter : NativeAdapter<AppKit.NSProgressIndicator>
+internal sealed class NSProgressIndicatorAdapter : ViewAdapter<AppKit.NSProgressIndicator>
 {
     public NSProgressIndicatorAdapter() : base(new AppKit.NSProgressIndicator(CGRect.Empty)) { }
 

@@ -15,7 +15,7 @@ public sealed class NSButton : ComponentBase
     protected override void BuildRenderTree(RenderTreeBuilder builder) { }
 }
 
-internal sealed class NSButtonAdapter : NativeAdapter<AppKit.NSButton>
+internal sealed class NSButtonAdapter : ViewAdapter<AppKit.NSButton>
 {
     private EventCallback _activated;
 

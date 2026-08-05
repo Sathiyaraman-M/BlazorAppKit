@@ -1,10 +1,10 @@
 namespace BlazorKit.Abstractions;
 
-internal sealed class NativeViewHost(NSView view) : INativeContainer
+internal sealed class RootViewHost(NSView view) : IViewContainer
 {
     public NSView View { get; } = view;
 
-    public void SetChildren(IReadOnlyList<INativeAdapter> children)
+    public void SetChildren(IReadOnlyList<IViewAdapter> children)
     {
         foreach (var child in View.Subviews)
         {

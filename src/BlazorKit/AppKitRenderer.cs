@@ -22,9 +22,9 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
 
     public event EventHandler<UnhandledExceptionEventArgs>? UnhandledException;
 
-    internal NativeAdapterResolver AdapterResolver { get; } =
-        serviceProvider.GetService<NativeAdapterResolver>()
-        ?? NativeAdapterResolver.CreateDefault(serviceProvider);
+    internal ViewAdapterResolver AdapterResolver { get; } =
+        serviceProvider.GetService<ViewAdapterResolver>()
+        ?? ViewAdapterResolver.CreateDefault(serviceProvider);
 
     internal IReadOnlyDictionary<int, NativeNode> Nodes => _nodes;
 
@@ -49,7 +49,7 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
         {
             var component = InstantiateComponent(typeof(TComponent));
             var componentId = AssignRootComponentId(component);
-            var node = new NativeNode(componentId, adapter: null, container: new NativeViewHost(host));
+            var node = new NativeNode(componentId, adapter: null, container: new RootViewHost(host));
 
             _nodes.Add(componentId, node);
 
@@ -84,7 +84,7 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
     private void ApplyComponentRenderTree(int componentId)
     {
         if (!_nodes.TryGetValue(componentId, out var parent) ||
-            parent.Container is not INativeContainer container)
+            parent.Container is not IViewContainer container)
         {
             return;
         }
@@ -132,7 +132,7 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
 
         if (childrenChanged)
         {
-            container.SetChildren([.. desiredChildren.Select(child => child.Adapter!).Cast<INativeAdapter>()]);
+            container.SetChildren([.. desiredChildren.Select(child => child.Adapter!).Cast<IViewAdapter>()]);
         }
     }
 
@@ -188,7 +188,7 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
     }
 
     private static void ApplyParameters(
-        INativeAdapter adapter,
+        IViewAdapter adapter,
         RenderTreeFrame[] frames,
         int start,
         int count)

@@ -18,7 +18,7 @@ public sealed class NSScrollView : ComponentBase
     }
 }
 
-internal sealed class NSScrollViewAdapter : NativeAdapter<AppKit.NSScrollView>, INativeContainer
+internal sealed class NSScrollViewAdapter : ViewAdapter<AppKit.NSScrollView>, IViewContainer
 {
     public NSScrollViewAdapter() : base(new AppKit.NSScrollView(CGRect.Empty)) { }
 
@@ -34,7 +34,7 @@ internal sealed class NSScrollViewAdapter : NativeAdapter<AppKit.NSScrollView>, 
         }
     }
 
-    public void SetChildren(IReadOnlyList<INativeAdapter> children)
+    public void SetChildren(IReadOnlyList<IViewAdapter> children)
     {
         View.DocumentView = children.FirstOrDefault()?.View;
     }

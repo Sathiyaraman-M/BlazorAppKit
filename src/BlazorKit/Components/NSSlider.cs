@@ -17,7 +17,7 @@ public sealed class NSSlider : ComponentBase
     protected override void BuildRenderTree(RenderTreeBuilder builder) { }
 }
 
-internal sealed class NSSliderAdapter : NativeAdapter<AppKit.NSSlider>, INativeValueAdapter<double>
+internal sealed class NSSliderAdapter : ViewAdapter<AppKit.NSSlider>, IValueAdapter<double>
 {
     private EventCallback<double> _valueChanged;
     private bool _updating;

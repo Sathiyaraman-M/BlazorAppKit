@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Components;
 
 namespace BlazorKit.Components.Base;
 
-internal abstract class NativeAdapter<TView>(TView view) : INativeAdapter<TView>
+internal abstract class ViewAdapter<TView>(TView view) : IViewAdapter<TView>
     where TView : NSView
 {
     public TView View { get; } = view;
 
-    NSView INativeAdapter.View => View;
+    NSView IViewAdapter.View => View;
 
     public abstract void ApplyParameters(ParameterView parameters);
 
