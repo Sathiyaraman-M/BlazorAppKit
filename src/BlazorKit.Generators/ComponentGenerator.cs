@@ -354,6 +354,6 @@ public sealed class ComponentGenerator : IIncrementalGenerator
 
     private static class Diagnostics
     {
-        public static readonly DiagnosticDescriptor DuplicateControl = new("BKGEN001", "Duplicate generated component", "The component '{0}' was selected more than once.", "BlazorKit", DiagnosticSeverity.Error, true);
+        public static readonly DiagnosticDescriptor DuplicateControl = new("BKGEN001", "Duplicate generated component", "The component '{0}' was selected more than once", "BlazorKit", DiagnosticSeverity.Error, true);
     }
 }
