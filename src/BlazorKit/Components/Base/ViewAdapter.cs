@@ -5,11 +5,11 @@ using Microsoft.AspNetCore.Components;
 namespace BlazorKit.Components.Base;
 
 internal abstract class ViewAdapter<TView>(TView view) : IViewAdapter<TView>
-    where TView : NSView
+    where TView : AppKit.NSView
 {
     public TView View { get; } = view;
 
-    NSView IViewAdapter.View => View;
+    AppKit.NSView IViewAdapter.View => View;
 
     public abstract void ApplyParameters(ParameterView parameters);
 

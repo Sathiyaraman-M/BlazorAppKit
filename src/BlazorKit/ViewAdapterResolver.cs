@@ -1,6 +1,4 @@
 using BlazorKit.Abstractions;
-using BlazorKit.Components;
-
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BlazorKit;
@@ -21,12 +19,7 @@ internal sealed class ViewAdapterResolver(IServiceProvider services)
     public static ViewAdapterResolver CreateDefault(IServiceProvider services)
     {
         var resolver = new ViewAdapterResolver(services);
-        resolver.Register<Components.NSTextField, NSTextFieldAdapter>();
-        resolver.Register<Components.NSButton, NSButtonAdapter>();
-        resolver.Register<Components.NSStackView, NSStackViewAdapter>();
-        resolver.Register<Components.NSSlider, NSSliderAdapter>();
-        resolver.Register<Components.NSProgressIndicator, NSProgressIndicatorAdapter>();
-        resolver.Register<Components.NSScrollView, NSScrollViewAdapter>();
+        GeneratedViewAdapterRegistrations.Register(resolver);
         return resolver;
     }
 
