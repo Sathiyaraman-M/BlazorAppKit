@@ -242,7 +242,13 @@ public sealed class ComponentGenerator : IIncrementalGenerator
                     source.AppendLine("        foreach (var child in children) View.AddArrangedSubview(child.View);");
                     break;
                 case 2:
-                    source.AppendLine("        View.DocumentView = children.Count == 0 ? default! : children[0].View;");
+                    source.AppendLine("        var documentView = children.Count == 0 ? default(global::AppKit.NSView) : children[0].View;");
+                    source.AppendLine("        View.DocumentView = documentView;");
+                    source.AppendLine("        if (documentView is not null)");
+                    source.AppendLine("        {");
+                    source.AppendLine("            documentView.Frame = View.Bounds;");
+                    source.AppendLine("            documentView.AutoresizingMask = global::AppKit.NSViewResizingMask.WidthSizable | global::AppKit.NSViewResizingMask.HeightSizable;");
+                    source.AppendLine("        }");
                     break;
                 case 3:
                     source.AppendLine("        View.ContentView = children.Count == 0 ? default! : children[0].View;");
