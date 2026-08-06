@@ -134,6 +134,11 @@ public sealed class ComponentGenerator : IIncrementalGenerator
             source.AppendLine($"    private {@event.CallbackType} _{@event.ComponentName};");
         }
 
+        if (control.IsValueAdapter)
+        {
+            source.AppendLine("    private bool _updatingValue;");
+        }
+
         var constructor = control.ConstructorExpression ?? FindConstructor(control.Type);
         source.AppendLine($"    public {control.Name}Adapter() : base({constructor})");
         if (events.Count > 0)
@@ -156,7 +161,25 @@ public sealed class ComponentGenerator : IIncrementalGenerator
         source.AppendLine("            {");
         foreach (var property in properties.Concat(aliases))
         {
-            source.AppendLine($"                case nameof({control.Name}.{property.ComponentName}): View.{property.NativeName} = parameter.Value is null ? default! : ({property.NativeTypeName})parameter.Value; break;");
+            if (control.IsValueAdapter && property.NativeName == control.ValueProperty)
+            {
+                source.AppendLine($"                case nameof({control.Name}.{property.ComponentName}):");
+                var valueExpression = control.ValueType == "string?"
+                    ? "parameter.Value as string ?? string.Empty"
+                    : $"parameter.Value is null ? default({property.NativeTypeName}) : ({property.NativeTypeName})parameter.Value";
+                source.AppendLine($"                    var value = {valueExpression};");
+                source.AppendLine("                    if (!EqualityComparer<" + property.NativeTypeName + ">.Default.Equals(View." + property.NativeName + ", value))");
+                source.AppendLine("                    {");
+                source.AppendLine("                        _updatingValue = true;");
+                source.AppendLine($"                        View.{property.NativeName} = value!;");
+                source.AppendLine("                        _updatingValue = false;");
+                source.AppendLine("                    }");
+                source.AppendLine("                    break;");
+            }
+            else
+            {
+                source.AppendLine($"                case nameof({control.Name}.{property.ComponentName}): View.{property.NativeName} = parameter.Value is null ? default! : ({property.NativeTypeName})parameter.Value; break;");
+            }
         }
         foreach (var @event in events)
         {
@@ -171,7 +194,11 @@ public sealed class ComponentGenerator : IIncrementalGenerator
             if (@event.IsValueChanged)
             {
                 source.AppendLine();
-                source.AppendLine($"    private async void On{@event.NativeName}(object? sender, EventArgs e) => await _{@event.ComponentName}.InvokeAsync(View.{control.ValueProperty});");
+                source.AppendLine($"    private async void On{@event.NativeName}(object? sender, EventArgs e)");
+                source.AppendLine("    {");
+                source.AppendLine("        if (!_updatingValue)");
+                source.AppendLine($"            await _{@event.ComponentName}.InvokeAsync(View.{control.ValueProperty});");
+                source.AppendLine("    }");
             }
             else if (@event.EventArgumentType is null)
             {
@@ -188,7 +215,19 @@ public sealed class ComponentGenerator : IIncrementalGenerator
         if (control.IsValueAdapter)
         {
             source.AppendLine();
-            source.AppendLine($"    public void SetValue({control.ValueType}) {{ View.{control.ValueProperty} = value; }}".Replace($"({control.ValueType})", $"({control.ValueType} value)"));
+            var valueAssignment = control.ValueType == "string?"
+                ? $"value ?? string.Empty"
+                : "value";
+            source.AppendLine("    public void SetValue(" + control.ValueType + " value)");
+            source.AppendLine("    {");
+            source.AppendLine($"        var nextValue = {valueAssignment};");
+            source.AppendLine($"        if (!EqualityComparer<{control.ValueType}>.Default.Equals(View.{control.ValueProperty}, nextValue))");
+            source.AppendLine("        {");
+            source.AppendLine("            _updatingValue = true;");
+            source.AppendLine($"            View.{control.ValueProperty} = nextValue;");
+            source.AppendLine("            _updatingValue = false;");
+            source.AppendLine("        }");
+            source.AppendLine("    }");
         }
 
         if (control.IsContainer)
