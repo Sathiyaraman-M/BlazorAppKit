@@ -43,4 +43,6 @@ internal sealed class SampleApplicationDelegate : NSApplicationDelegate
         _window.Center();
         _window.MakeKeyAndOrderFront(null);
     }
+
+    public override bool ApplicationShouldTerminateAfterLastWindowClosed(NSApplication sender) => true;
 }
