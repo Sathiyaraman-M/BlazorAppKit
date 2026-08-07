@@ -1,6 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
-
 namespace BlazorKit.Sample;
 
 internal static class Program
@@ -16,7 +13,9 @@ internal static class Program
 internal sealed class SampleApplicationDelegate : NSApplicationDelegate
 {
     private NSWindow? _window;
-    private AppKitRenderer? _renderer;
+    private BlazorKitHost? _host;
+
+    public override bool ApplicationShouldTerminateAfterLastWindowClosed(NSApplication sender) => true;
 
     public override void DidFinishLaunching(NSNotification notification)
     {
@@ -31,18 +30,14 @@ internal sealed class SampleApplicationDelegate : NSApplicationDelegate
             Title = "BlazorKit Counter"
         };
 
-        var services = new ServiceCollection().BuildServiceProvider();
-
-        _renderer = new AppKitRenderer(services, NullLoggerFactory.Instance);
+        _host = BlazorKitHost.Create();
 
         if (_window.ContentView is { } contentView)
         {
-            _ = _renderer.MountRootComponentAsync<App>(contentView);
+            _ = _host.MountRootComponentAsync<App>(contentView);
         }
 
         _window.Center();
         _window.MakeKeyAndOrderFront(null);
     }
-
-    public override bool ApplicationShouldTerminateAfterLastWindowClosed(NSApplication sender) => true;
 }
