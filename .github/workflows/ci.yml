@@ -28,7 +28,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version-file: global.json
+          global-json-file: global.json
           workloads: macos
 
       - name: Set package version from tag
@@ -42,7 +42,9 @@ jobs:
           fi
 
       - name: Restore
-        run: dotnet restore src/BlazorKit/BlazorKit.csproj
+        run: |
+          dotnet restore src/BlazorKit/BlazorKit.csproj
+          dotnet restore src/BlazorKit.Templates/BlazorKit.Templates.csproj
 
       - name: Build library
         run: dotnet build src/BlazorKit/BlazorKit.csproj --configuration Release --no-restore
