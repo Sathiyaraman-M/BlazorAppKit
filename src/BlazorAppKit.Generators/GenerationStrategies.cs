@@ -31,6 +31,8 @@ internal sealed class PropertyGenerationStrategy : GenerationStrategy
         foreach (var property in context.AllProperties)
         {
             var initializer = property.IsReferenceType ? " = default!;" : string.Empty;
+            DocumentationUtilities.Append(source, context.Documentation, property.Symbol,
+                $"Gets or sets the AppKit {property.NativeName} value.");
             source.AppendLine($"    [global::Microsoft.AspNetCore.Components.Parameter] public {property.TypeName} {property.ComponentName} {{ get; set; }}{initializer}");
         }
     }
@@ -52,7 +54,11 @@ internal sealed class EventGenerationStrategy : GenerationStrategy
     public override void AppendComponentMembers(StringBuilder source, GenerationContext context)
     {
         foreach (var @event in context.Events)
+        {
+            DocumentationUtilities.Append(source, context.Documentation, @event.Symbol,
+                $"Callback invoked when the AppKit {@event.NativeName} event occurs.");
             source.AppendLine($"    [global::Microsoft.AspNetCore.Components.Parameter] public {@event.CallbackType} {@event.ComponentName} {{ get; set; }}");
+        }
     }
 
     public override void AppendAdapterFields(StringBuilder source, GenerationContext context)
@@ -142,8 +148,12 @@ internal sealed class ContainerGenerationStrategy : GenerationStrategy
 {
     public override bool AppliesTo(GenerationContext context) => context.Control.IsContainer;
 
-    public override void AppendComponentMembers(StringBuilder source, GenerationContext context) =>
+    public override void AppendComponentMembers(StringBuilder source, GenerationContext context)
+    {
+        DocumentationUtilities.Append(source, context.Documentation, null,
+            "The child content rendered inside the native AppKit view.");
         source.AppendLine("    [global::Microsoft.AspNetCore.Components.Parameter] public global::Microsoft.AspNetCore.Components.RenderFragment? ChildContent { get; set; }");
+    }
 
     public override void AppendAdapterMembers(StringBuilder source, GenerationContext context)
     {
@@ -158,7 +168,7 @@ internal sealed class ContainerGenerationStrategy : GenerationStrategy
                 break;
             case 2:
                 source.AppendLine("        var documentView = children.Count == 0 ? default(global::AppKit.NSView) : children[0].View;");
-                source.AppendLine("        View.DocumentView = documentView;");
+                source.AppendLine("        View.DocumentView = documentView!;");
                 source.AppendLine("        if (documentView is not null)");
                 source.AppendLine("        {");
                 source.AppendLine("            documentView.Frame = View.Bounds;");

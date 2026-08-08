@@ -13,15 +13,17 @@ public sealed class ComponentGenerator : IIncrementalGenerator
     {
         var compilationAndAttributes = context.CompilationProvider.Select(static (compilation, _) =>
             (compilation, compilation.Assembly.GetAttributes()));
+        var additionalTexts = context.AdditionalTextsProvider.Collect();
 
-        context.RegisterSourceOutput(compilationAndAttributes, static (productionContext, source) =>
-            Execute(productionContext, source.compilation, source.Item2));
+        context.RegisterSourceOutput(compilationAndAttributes.Combine(additionalTexts), static (productionContext, source) =>
+            Execute(productionContext, source.Left.compilation, source.Left.Item2, source.Right));
     }
 
     private static void Execute(
         SourceProductionContext context,
         Compilation compilation,
-        ImmutableArray<AttributeData> assemblyAttributes)
+        ImmutableArray<AttributeData> assemblyAttributes,
+        ImmutableArray<AdditionalText> additionalTexts)
     {
         var controls = assemblyAttributes
             .Where(attribute => attribute.AttributeClass?.ToDisplayString() == ComponentAttribute)
@@ -29,6 +31,7 @@ public sealed class ComponentGenerator : IIncrementalGenerator
             .Where(control => control is not null)
             .Cast<ControlModel>()
             .ToList();
+        var documentation = DocumentationLookup.Create(additionalTexts);
 
         var names = new HashSet<string>(StringComparer.Ordinal);
         foreach (var control in controls)
@@ -42,7 +45,7 @@ public sealed class ComponentGenerator : IIncrementalGenerator
                 continue;
             }
 
-            var model = GenerationContext.Create(control, assemblyAttributes);
+            var model = GenerationContext.Create(control, assemblyAttributes, documentation);
             context.AddSource($"{control.Name}.g.cs", ComponentSourceGenerator.Generate(model));
         }
 

@@ -64,6 +64,9 @@ public sealed class BlazorAppKitHost : IDisposable
         where TComponent : IComponent =>
         Renderer.MountRootComponentAsync<TComponent>(host, parameters);
 
+    /// <summary>
+    /// Releases the renderer and service provider owned by this host.
+    /// </summary>
     public void Dispose()
     {
         if (_disposed)

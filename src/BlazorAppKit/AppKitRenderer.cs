@@ -18,8 +18,14 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
     private readonly AppKitDispatcher _dispatcher = new();
     private readonly Dictionary<int, NativeNode> _nodes = [];
 
+    /// <summary>
+    /// Gets the dispatcher used to serialize renderer work onto the AppKit main thread.
+    /// </summary>
     public override Dispatcher Dispatcher => _dispatcher;
 
+    /// <summary>
+    /// Occurs when an unhandled exception is raised while rendering.
+    /// </summary>
     public event EventHandler<UnhandledExceptionEventArgs>? UnhandledException;
 
     internal ViewAdapterResolver AdapterResolver { get; } =
@@ -31,12 +37,22 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
     /// <summary>
     /// Mounts a native-aware Blazor root component into an AppKit view.
     /// </summary>
+    /// <typeparam name="TComponent">The root component type to instantiate.</typeparam>
+    /// <param name="host">The AppKit view that will host the rendered component.</param>
+    /// <returns>The renderer-assigned component identifier.</returns>
     public Task<int> MountRootComponentAsync<
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(
         NSView host)
         where TComponent : IComponent =>
         MountRootComponentAsync<TComponent>(host, ParameterView.Empty);
 
+    /// <summary>
+    /// Mounts a native-aware Blazor root component into an AppKit view with parameters.
+    /// </summary>
+    /// <typeparam name="TComponent">The root component type to instantiate.</typeparam>
+    /// <param name="host">The AppKit view that will host the rendered component.</param>
+    /// <param name="parameters">The parameters supplied to the root component.</param>
+    /// <returns>The renderer-assigned component identifier.</returns>
     public Task<int> MountRootComponentAsync<
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(
         NSView host,
@@ -58,12 +74,14 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
         });
     }
 
+    /// <inheritdoc />
     protected override void HandleException(Exception exception)
     {
         _logger.LogError(exception, "Unhandled exception in the AppKit Blazor renderer.");
         UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(exception, false));
     }
 
+    /// <inheritdoc />
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {
         _dispatcher.AssertAccess();

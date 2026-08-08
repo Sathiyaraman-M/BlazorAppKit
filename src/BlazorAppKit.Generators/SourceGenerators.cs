@@ -21,10 +21,13 @@ internal static class ComponentSourceGenerator
         source.AppendLine("#nullable enable");
         source.AppendLine("namespace BlazorAppKit.Components;");
         source.AppendLine();
+        DocumentationUtilities.Append(source, context.Documentation, control.Type,
+            $"Blazor component wrapper for AppKit.{control.Name}.", indentation: 0);
         source.AppendLine($"public sealed class {control.Name} : global::Microsoft.AspNetCore.Components.ComponentBase");
         source.AppendLine("{");
         foreach (var strategy in active) strategy.AppendComponentMembers(source, context);
         source.AppendLine();
+        source.AppendLine("    /// <inheritdoc />");
         source.AppendLine("    protected override void BuildRenderTree(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)");
         source.AppendLine("    {");
         if (control.IsContainer) source.AppendLine("        if (ChildContent is not null) builder.AddContent(0, ChildContent);");

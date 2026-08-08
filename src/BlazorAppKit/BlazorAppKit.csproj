@@ -28,4 +28,14 @@
                       OutputItemType="Analyzer"
                       ReferenceOutputAssembly="false" />
   </ItemGroup>
+
+  <Target Name="AddReferenceDocumentationFiles" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <_ReferenceDocumentation Include="@(ReferencePath)">
+        <DocumentationPath>%(RootDir)%(Directory)%(Filename).xml</DocumentationPath>
+      </_ReferenceDocumentation>
+      <AdditionalFiles Include="@(_ReferenceDocumentation->'%(DocumentationPath)')"
+                       Condition="Exists('%(DocumentationPath)')" />
+    </ItemGroup>
+  </Target>
 </Project>

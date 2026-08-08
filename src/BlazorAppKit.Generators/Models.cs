@@ -83,7 +83,7 @@ internal sealed class ControlModel
                     Excludes.Contains(property.Name) || SymbolUtilities.IsInfrastructureProperty(property.Name)) continue;
 
                 yield return new PropertyModel(property.Name, property.Name, SymbolUtilities.TypeName(property.Type),
-                    SymbolUtilities.TypeName(property.Type), property.Type.IsReferenceType);
+                    SymbolUtilities.TypeName(property.Type), property.Type.IsReferenceType, property);
             }
         }
     }
@@ -102,7 +102,7 @@ internal sealed class ControlModel
             if (property is not null)
             {
                 yield return new PropertyModel(nativeName, componentName, SymbolUtilities.TypeName(property.Type),
-                    SymbolUtilities.TypeName(property.Type), property.Type.IsReferenceType);
+                    SymbolUtilities.TypeName(property.Type), property.Type.IsReferenceType, property);
             }
         }
     }
@@ -130,31 +130,54 @@ internal sealed class ControlModel
                     : argumentType is null
                         ? "global::Microsoft.AspNetCore.Components.EventCallback"
                         : $"global::Microsoft.AspNetCore.Components.EventCallback<{argumentType}>";
-                yield return new EventModel(@event.Name, callbackName, callbackType, argumentType, isValueChanged);
+                yield return new EventModel(@event.Name, callbackName, callbackType, argumentType, isValueChanged, @event);
             }
         }
     }
 }
 
-internal sealed record PropertyModel(string NativeName, string ComponentName, string TypeName, string NativeTypeName, bool IsReferenceType);
-internal sealed record EventModel(string NativeName, string ComponentName, string CallbackType, string? EventArgumentType, bool IsValueChanged);
+internal sealed record PropertyModel(
+    string NativeName,
+    string ComponentName,
+    string TypeName,
+    string NativeTypeName,
+    bool IsReferenceType,
+    IPropertySymbol Symbol);
+
+internal sealed record EventModel(
+    string NativeName,
+    string ComponentName,
+    string CallbackType,
+    string? EventArgumentType,
+    bool IsValueChanged,
+    IEventSymbol Symbol);
 
 internal sealed class GenerationContext
 {
-    private GenerationContext(ControlModel control, IEnumerable<PropertyModel> properties, IEnumerable<PropertyModel> aliases, IEnumerable<EventModel> events)
+    private GenerationContext(
+        ControlModel control,
+        IEnumerable<PropertyModel> properties,
+        IEnumerable<PropertyModel> aliases,
+        IEnumerable<EventModel> events,
+        DocumentationLookup documentation)
     {
         Control = control;
         Properties = properties.ToList();
         Aliases = aliases.ToList();
         Events = events.ToList();
+        Documentation = documentation;
     }
 
     public ControlModel Control { get; }
     public IReadOnlyList<PropertyModel> Properties { get; }
     public IReadOnlyList<PropertyModel> Aliases { get; }
     public IReadOnlyList<EventModel> Events { get; }
+    public DocumentationLookup Documentation { get; }
     public IEnumerable<PropertyModel> AllProperties => Properties.Concat(Aliases);
 
-    public static GenerationContext Create(ControlModel control, ImmutableArray<AttributeData> attributes) =>
-        new(control, control.GetProperties(), control.GetPropertyAliases(attributes), control.GetEvents(attributes));
+    public static GenerationContext Create(
+        ControlModel control,
+        ImmutableArray<AttributeData> attributes,
+        DocumentationLookup documentation) =>
+        new(control, control.GetProperties(), control.GetPropertyAliases(attributes), control.GetEvents(attributes), documentation);
 }
