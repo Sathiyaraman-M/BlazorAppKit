@@ -43,15 +43,15 @@ jobs:
 
       - name: Restore
         run: |
-          dotnet restore src/BlazorKit/BlazorKit.csproj
-          dotnet restore src/BlazorKit.Templates/BlazorKit.Templates.csproj
+          dotnet restore src/BlazorAppKit/BlazorAppKit.csproj
+          dotnet restore src/BlazorAppKit.Templates/BlazorAppKit.Templates.csproj
 
       - name: Build library
-        run: dotnet build src/BlazorKit/BlazorKit.csproj --configuration Release --no-restore
+        run: dotnet build src/BlazorAppKit/BlazorAppKit.csproj --configuration Release --no-restore
 
       - name: Pack NuGet package
         run: >-
-          dotnet pack src/BlazorKit/BlazorKit.csproj
+          dotnet pack src/BlazorAppKit/BlazorAppKit.csproj
           --configuration Release
           --no-build
           --no-restore
@@ -61,12 +61,12 @@ jobs:
       - name: Upload package artifact
         uses: actions/upload-artifact@v7
         with:
-          name: blazorkit-${{ env.PACKAGE_VERSION }}
+          name: blazorappkit-${{ env.PACKAGE_VERSION }}
           path: artifacts/*
 
       - name: Pack project template
         run: >-
-          dotnet pack src/BlazorKit.Templates/BlazorKit.Templates.csproj
+          dotnet pack src/BlazorAppKit.Templates/BlazorAppKit.Templates.csproj
           --configuration Release
           --no-build
           --output artifacts
@@ -76,16 +76,16 @@ jobs:
         run: |
           TEMPLATE_HOME="$RUNNER_TEMP/template-hive"
           mkdir -p "$TEMPLATE_HOME/output"
-          dotnet new install artifacts/BlazorKit.Templates.$PACKAGE_VERSION.nupkg --debug:custom-hive "$TEMPLATE_HOME"
-          dotnet new blazorkit --debug:custom-hive "$TEMPLATE_HOME" --output "$TEMPLATE_HOME/output/CounterApp"
+          dotnet new install artifacts/BlazorAppKit.Templates.$PACKAGE_VERSION.nupkg --debug:custom-hive "$TEMPLATE_HOME"
+          dotnet new blazorappkit --debug:custom-hive "$TEMPLATE_HOME" --output "$TEMPLATE_HOME/output/CounterApp"
           test -f "$TEMPLATE_HOME/output/CounterApp/CounterApp.csproj"
-          grep -q 'BlazorKit' "$TEMPLATE_HOME/output/CounterApp/CounterApp.csproj"
+          grep -q 'BlazorAppKit' "$TEMPLATE_HOME/output/CounterApp/CounterApp.csproj"
 
       - name: Upload template package artifact
         uses: actions/upload-artifact@v7
         with:
-          name: blazorkit-template-${{ env.PACKAGE_VERSION }}
-          path: artifacts/BlazorKit.Templates.*.nupkg
+          name: blazorappkit-template-${{ env.PACKAGE_VERSION }}
+          path: artifacts/BlazorAppKit.Templates.*.nupkg
 
       - name: NuGet login (OIDC to temporary API key)
         uses: NuGet/login@v1

@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "BlazorAppKit contributors",
+  "classifications": [
+    "Blazor",
+    "Desktop",
+    "macOS"
+  ],
+  "tags": {
+    "type": "project"
+  },
+  "identity": "BlazorAppKit.App",
+  "name": "BlazorAppKit macOS App",
+  "shortName": "blazorappkit",
+  "groupIdentity": "BlazorAppKit.App",
+  "sourceName": "BlazorAppKitApp",
+  "preferNameDirectory": true,
+  "description": "A native macOS application using BlazorAppKit and AppKit.",
+  "symbols": {
+    "framework": {
+      "type": "parameter",
+      "datatype": "choice",
+      "defaultValue": "net10.0-macos",
+      "replaces": "net10.0-macos",
+      "choices": [
+        {
+          "choice": "net10.0-macos",
+          "description": ".NET 10 macOS application"
+        }
+      ]
+    },
+    "blazorappkit-version": {
+      "type": "parameter",
+      "datatype": "text",
+      "defaultValue": "0.1.0",
+      "replaces": "0.1.0",
+      "description": "The BlazorAppKit NuGet package version to reference."
+    }
+  }
+}

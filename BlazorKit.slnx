@@ -1,5 +1,0 @@
-<Solution>
-  <Project Path="src/BlazorKit/BlazorKit.csproj" />
-  <Project Path="src/BlazorKit.Sample/BlazorKit.Sample.csproj" />
-  <Project Path="src/BlazorKit.Templates/BlazorKit.Templates.csproj" />
-</Solution>

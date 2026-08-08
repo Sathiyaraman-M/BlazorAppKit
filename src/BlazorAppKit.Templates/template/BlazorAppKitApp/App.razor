@@ -1,0 +1,17 @@
+@using AppKit
+@using BlazorAppKit.Components
+
+<NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Vertical" Spacing="12">
+    <NSTextField StringValue="Welcome to BlazorAppKit" IsEditable="false" IsBordered="false" DrawsBackground="false" />
+    <NSTextField StringValue="Current count: @currentCount" IsEditable="false" IsBordered="false" DrawsBackground="false" />
+    <NSButton Title="Increment" Activated="Increment" />
+</NSStackView>
+
+@code {
+    private int currentCount;
+
+    private void Increment()
+    {
+        currentCount++;
+    }
+}

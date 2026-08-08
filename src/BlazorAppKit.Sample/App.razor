@@ -1,41 +1,3 @@
-# BlazorAppKit
-
-Project to build macOS applications using Blazor with a special AppKit-based Renderer. Inspired by the Flutter+Blazor demo (By Steve Sanderson demonstrated in NDC Oslo 2019) and Blazor-Binding projects.
-
-## Install
-
-Add the package to a .NET 10 macOS project:
-
-```bash
-dotnet add package BlazorAppKit
-```
-
-> [!NOTE]
-> Supports only .NET 10 and above.
-
-## Project template
-
-Install the project template package and create a native macOS starter app:
-
-```bash
-dotnet new install BlazorAppKit.Templates
-dotnet new blazorappkit -n MyApp
-cd MyApp
-dotnet run
-```
-
-> [!NOTE]
-> Requires macOS workload to be installed. Run `dotnet workload install macos` to install it. 
-
-The template creates a minimal counter app targeting .NET 10 and macOS 15 or later. For different library version, pass the version explicitly with `--blazorappkit-version`.
-
-## Demo
-
-![Running BlazorAppKit.Sample project](./img/blazorappkit-sample.png)
-
-The below code is the Blazor markup for the above macOS app.
-
-```razor
 @using BlazorAppKit.Components
 @using AppKit
 
@@ -63,4 +25,3 @@ The below code is the Blazor markup for the above macOS app.
         currentCount++;
     }
 }
-```
