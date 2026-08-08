@@ -1,0 +1,99 @@
+name: Publish Package to NuGet
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_NOLOGO: 'true'
+
+jobs:
+  build-pack-publish:
+    name: Build, Pack and Publish
+    runs-on: macos-14
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      PACKAGE_VERSION: 0.0.0
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version-file: global.json
+          workloads: macos
+
+      - name: Set package version from tag
+        run: echo "PACKAGE_VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+
+      - name: Validate package version
+        run: |
+          if [[ ! "$PACKAGE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Tag must use a SemVer version after the v prefix, for example v1.0.0 or v0.1.0-prerelease."
+            exit 1
+          fi
+
+      - name: Restore
+        run: dotnet restore src/BlazorKit/BlazorKit.csproj
+
+      - name: Build library
+        run: dotnet build src/BlazorKit/BlazorKit.csproj --configuration Release --no-restore
+
+      - name: Pack NuGet package
+        run: >-
+          dotnet pack src/BlazorKit/BlazorKit.csproj
+          --configuration Release
+          --no-build
+          --no-restore
+          --output artifacts
+          -p:PackageVersion=$PACKAGE_VERSION
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: blazorkit-${{ env.PACKAGE_VERSION }}
+          path: artifacts/*
+
+      - name: Pack project template
+        run: >-
+          dotnet pack src/BlazorKit.Templates/BlazorKit.Templates.csproj
+          --configuration Release
+          --no-build
+          --output artifacts
+          -p:PackageVersion=$PACKAGE_VERSION
+
+      - name: Verify project template
+        run: |
+          TEMPLATE_HOME="$RUNNER_TEMP/template-hive"
+          mkdir -p "$TEMPLATE_HOME/output"
+          dotnet new install artifacts/BlazorKit.Templates.$PACKAGE_VERSION.nupkg --debug:custom-hive "$TEMPLATE_HOME"
+          dotnet new blazorkit --debug:custom-hive "$TEMPLATE_HOME" --output "$TEMPLATE_HOME/output/CounterApp"
+          test -f "$TEMPLATE_HOME/output/CounterApp/CounterApp.csproj"
+          grep -q 'BlazorKit' "$TEMPLATE_HOME/output/CounterApp/CounterApp.csproj"
+
+      - name: Upload template package artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: blazorkit-template-${{ env.PACKAGE_VERSION }}
+          path: artifacts/BlazorKit.Templates.*.nupkg
+
+      - name: NuGet login (OIDC to temporary API key)
+        uses: NuGet/login@v1
+        id: nuget-login
+        with:
+          user: Sathiyaraman-M
+
+      - name: Publish to NuGet.org
+        run: >-
+          dotnet nuget push artifacts/*.nupkg
+          --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
