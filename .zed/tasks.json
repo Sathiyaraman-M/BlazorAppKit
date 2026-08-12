@@ -26,6 +26,20 @@
     "save": "all"
   },
   {
+    "label": ".NET Build Sample",
+    "command": "dotnet build",
+    "args": ["src/BlazorAppKit.Sample/BlazorAppKit.Sample.csproj"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "env": {},
+    "use_new_terminal": false,
+    "allow_concurrent_runs": true,
+    "reveal": "always",
+    "reveal_target": "center",
+    "hide": "on_success",
+    "shell": "system",
+    "save": "all"
+  },
+  {
     "label": ".NET Run Sample",
     "command": "dotnet run",
     "args": ["--project", "src/BlazorAppKit.Sample/BlazorAppKit.Sample.csproj"],
