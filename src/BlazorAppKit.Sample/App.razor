@@ -1,27 +1,169 @@
-@using BlazorAppKit.Components
 @using AppKit
+@using BlazorAppKit.Components
 
-<NSScrollView HasVerticalScroller="true">
-    <NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Vertical" Spacing="12">
-        <NSTextField StringValue="BlazorAppKit Counter" IsEditable="false" IsBordered="false" DrawsBackground="false" />
-        <NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Horizontal" Spacing="8">
-            <NSTextField StringValue="@($"Current count: {currentCount}")" IsEditable="false" IsBordered="false" DrawsBackground="false" />
-            <NSButton Title="Increment" Activated="Increment" />
-        </NSStackView>
-        <NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Horizontal" Spacing="8">
-            <NSTextField StringValue="Name:" IsEditable="false" IsBordered="false" DrawsBackground="false" />
-            <NSTextField @bind-StringValue="name" IsEditable="true" IsBordered="true" />
-        </NSStackView>
-        <NSTextField StringValue="@name" IsEditable="false" IsBordered="false" DrawsBackground="false" />
+<NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Vertical"
+             Alignment="@NSLayoutAttribute.Width"
+             Distribution="@NSStackViewDistribution.Fill"
+             Spacing="12"
+             EdgeInsets="@(new NSEdgeInsets(16, 18, 16, 18))">
+    <NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Horizontal"
+                 Alignment="@NSLayoutAttribute.CenterY"
+                 Spacing="6">
+        <NSButton Title="‹" BezelStyle="@NSBezelStyle.TexturedRounded" Activated="GoBack" />
+        <NSButton Title="›" BezelStyle="@NSBezelStyle.TexturedRounded" Activated="GoForward" />
+        <NSTextField StringValue="BlazorAppKit Settings"
+                     IsEditable="false"
+                     IsBordered="false"
+                     DrawsBackground="false"
+                     Font="@NSFont.SystemFontOfSize(15)" />
     </NSStackView>
-</NSScrollView>
+
+    <NSSplitView IsVertical="true" DividerStyle="@NSSplitViewDividerStyle.Thin">
+        <NSBox BoxType="@NSBoxType.NSBoxCustom"
+               BorderType="@NSBorderType.NoBorder"
+               FillColor="@NSColor.ControlBackground"
+               CornerRadius="12"
+               ContentViewMargins="@(new CoreGraphics.CGSize(14, 16))">
+            <NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Vertical"
+                         Alignment="@NSLayoutAttribute.Width"
+                         Distribution="@NSStackViewDistribution.Fill"
+                         Spacing="8">
+                <NSSearchField @bind-StringValue="searchText" PlaceholderString="Search" />
+                <NSTextField StringValue="PAGES"
+                             IsEditable="false"
+                             IsBordered="false"
+                             DrawsBackground="false"
+                             TextColor="@NSColor.SecondaryLabel"
+                             Font="@NSFont.SystemFontOfSize(11)" />
+                <NSButton Title='@PageTitle("counter")'
+                          Alignment="@NSTextAlignment.Left"
+                          Bordered='@IsSelected("counter")'
+                          BezelStyle="@NSBezelStyle.Recessed"
+                          BezelColor="@NSColor.ControlAccent"
+                          ContentTintColor='@ItemColor("counter")'
+                          Activated='@(() => SelectPage("counter"))' />
+                <NSButton Title='@PageTitle("binding")'
+                          Alignment="@NSTextAlignment.Left"
+                          Bordered='@IsSelected("binding")'
+                          BezelStyle="@NSBezelStyle.Recessed"
+                          BezelColor="@NSColor.ControlAccent"
+                          ContentTintColor='@ItemColor("binding")'
+                          Activated='@(() => SelectPage("binding"))' />
+            </NSStackView>
+        </NSBox>
+
+        <NSScrollView HasVerticalScroller="true" BorderType="@NSBorderType.NoBorder">
+            <NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Vertical"
+                         Alignment="@NSLayoutAttribute.Width"
+                         Distribution="@NSStackViewDistribution.Fill"
+                         Spacing="14"
+                         EdgeInsets="@(new NSEdgeInsets(8, 22, 8, 22))">
+                @if (selectedPage == "counter")
+                {
+                    <NSBox BoxType="@NSBoxType.NSBoxCustom"
+                           BorderType="@NSBorderType.NoBorder"
+                           FillColor="@NSColor.ControlBackground"
+                           CornerRadius="14"
+                           ContentViewMargins="@(new CoreGraphics.CGSize(24, 20))">
+                        <NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Vertical"
+                                     Alignment="@NSLayoutAttribute.Width"
+                                     Spacing="8">
+                            <NSTextField StringValue="Counter"
+                                         IsEditable="false"
+                                         IsBordered="false"
+                                         DrawsBackground="false"
+                                         Font="@NSFont.SystemFontOfSize(24)" />
+                            <NSTextField StringValue="A small counter page hosted inside a native AppKit shell."
+                                         IsEditable="false"
+                                         IsBordered="false"
+                                         DrawsBackground="false"
+                                         TextColor="@NSColor.SecondaryLabel" />
+                        </NSStackView>
+                    </NSBox>
+                    <NSBox BoxType="@NSBoxType.NSBoxCustom"
+                           BorderType="@NSBorderType.NoBorder"
+                           FillColor="@NSColor.ControlBackground"
+                           CornerRadius="12"
+                           ContentViewMargins="@(new CoreGraphics.CGSize(18, 16))">
+                        <NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Horizontal"
+                                     Alignment="@NSLayoutAttribute.CenterY"
+                                     Spacing="14">
+                            <NSTextField StringValue="@($"Current count: {currentCount}")"
+                                         IsEditable="false"
+                                         IsBordered="false"
+                                         DrawsBackground="false" />
+                            <NSButton Title="Increment"
+                                      BezelStyle="@NSBezelStyle.Rounded"
+                                      Activated="Increment" />
+                        </NSStackView>
+                    </NSBox>
+                }
+                else
+                {
+                    <NSBox BoxType="@NSBoxType.NSBoxCustom"
+                           BorderType="@NSBorderType.NoBorder"
+                           FillColor="@NSColor.ControlBackground"
+                           CornerRadius="14"
+                           ContentViewMargins="@(new CoreGraphics.CGSize(24, 20))">
+                        <NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Vertical"
+                                     Alignment="@NSLayoutAttribute.Width"
+                                     Spacing="8">
+                            <NSTextField StringValue="Two-way binding"
+                                         IsEditable="false"
+                                         IsBordered="false"
+                                         DrawsBackground="false"
+                                         Font="@NSFont.SystemFontOfSize(24)" />
+                            <NSTextField StringValue="Changes in either control update the same Blazor value."
+                                         IsEditable="false"
+                                         IsBordered="false"
+                                         DrawsBackground="false"
+                                         TextColor="@NSColor.SecondaryLabel" />
+                        </NSStackView>
+                    </NSBox>
+                    <NSBox BoxType="@NSBoxType.NSBoxCustom"
+                           BorderType="@NSBorderType.NoBorder"
+                           FillColor="@NSColor.ControlBackground"
+                           CornerRadius="12"
+                           ContentViewMargins="@(new CoreGraphics.CGSize(18, 16))">
+                        <NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Vertical"
+                                     Alignment="@NSLayoutAttribute.Width"
+                                     Spacing="8">
+                            <NSTextField StringValue="Name"
+                                         IsEditable="false"
+                                         IsBordered="false"
+                                         DrawsBackground="false" />
+                            <NSTextField @bind-StringValue="name" IsEditable="true" IsBordered="true" />
+                            <NSTextField StringValue="@($"Bound value: {name}")"
+                                         IsEditable="false"
+                                         IsBordered="false"
+                                         DrawsBackground="false"
+                                         TextColor="@NSColor.SecondaryLabel" />
+                        </NSStackView>
+                    </NSBox>
+                }
+            </NSStackView>
+        </NSScrollView>
+    </NSSplitView>
+</NSStackView>
 
 @code {
     private int currentCount;
-    private string? name;
+    private string name = "Ada";
+    private string searchText = string.Empty;
+    private string selectedPage = "counter";
 
-    private void Increment()
-    {
-        currentCount++;
-    }
+    private void Increment() => currentCount++;
+
+    private void SelectPage(string page) => selectedPage = page;
+
+    private void GoBack() => SelectPage("counter");
+
+    private void GoForward() => SelectPage("binding");
+
+    private bool IsSelected(string page) => selectedPage == page;
+
+    private NSColor ItemColor(string page) => IsSelected(page) ? NSColor.White : NSColor.Text;
+
+    private string PageTitle(string page) =>
+        $"{(IsSelected(page) ? "●  " : "    ")}{(page == "counter" ? "Counter" : "Two-way binding")}";
 }

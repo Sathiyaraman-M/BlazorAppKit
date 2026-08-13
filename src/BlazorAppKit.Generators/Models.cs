@@ -110,9 +110,8 @@ internal sealed class ControlModel
     public IEnumerable<EventModel> GetEvents(ImmutableArray<AttributeData> attributes)
     {
         var configured = attributes.Where(a => a.AttributeClass?.ToDisplayString() == EventAttribute)
-            .Where(a => a.ConstructorArguments.Length >= 3 && a.ConstructorArguments[0].Value is INamedTypeSymbol type &&
-                        SymbolEqualityComparer.Default.Equals(type, Type))
-            .ToDictionary(a => (string)a.ConstructorArguments[1].Value!, a => a);
+            .Where(a => a.ConstructorArguments.Length >= 3 && a.ConstructorArguments[0].Value is INamedTypeSymbol)
+            .ToList();
 
         var seen = new HashSet<string>(StringComparer.Ordinal);
         for (var type = Type; type is not null; type = type.BaseType)
@@ -122,7 +121,11 @@ internal sealed class ControlModel
                 if (!seen.Add(@event.Name) || @event.IsStatic ||
                     !SymbolUtilities.TryGetEventArgument(@event.Type, out var argumentType)) continue;
 
-                var configuredEvent = configured.GetValueOrDefault(@event.Name);
+                var configuredEvent = configured.FirstOrDefault(attribute =>
+                    (string)attribute.ConstructorArguments[1].Value! == @event.Name &&
+                    attribute.ConstructorArguments[0].Value is INamedTypeSymbol declaringType &&
+                    (SymbolEqualityComparer.Default.Equals(declaringType, Type) ||
+                     SymbolUtilities.InheritsFrom(Type, declaringType)));
                 var callbackName = configuredEvent is null ? @event.Name : (string)configuredEvent.ConstructorArguments[2].Value!;
                 var isValueChanged = configuredEvent is not null && AttributeUtilities.GetBool(configuredEvent, "IsValueChanged");
                 var callbackType = isValueChanged

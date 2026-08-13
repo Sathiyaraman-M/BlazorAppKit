@@ -20,14 +20,14 @@ internal sealed class SampleApplicationDelegate : NSApplicationDelegate
     public override void DidFinishLaunching(NSNotification notification)
     {
         _window = new NSWindow(
-            new CGRect(0, 0, 480, 280),
+            new CGRect(0, 0, 900, 600),
             NSWindowStyle.Titled |
             NSWindowStyle.Closable |
             NSWindowStyle.Resizable,
             NSBackingStore.Buffered,
             deferCreation: false)
         {
-            Title = "BlazorAppKit Counter"
+            Title = "BlazorAppKit Sample"
         };
 
         _host = BlazorAppKitHost.Create();

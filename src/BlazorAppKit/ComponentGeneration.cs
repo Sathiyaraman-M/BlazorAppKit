@@ -12,6 +12,10 @@ using BlazorAppKit.Generation;
 [assembly: GenerateComponent(typeof(NSBox), IsContainer = true, ContainerKind = GeneratedContainerKind.ContentView)]
 [assembly: GenerateComponent(typeof(NSClipView), IsContainer = true, ContainerKind = GeneratedContainerKind.DocumentView)]
 [assembly: GenerateComponent(typeof(NSGridView), IsContainer = true, ContainerKind = GeneratedContainerKind.Subviews)]
+[assembly: GenerateComponent(typeof(NSSplitView), IsContainer = true, ContainerKind = GeneratedContainerKind.SplitView)]
+[assembly: GenerateComponent(typeof(NSSearchField), IsValueAdapter = true, ValueProperty = "StringValue", ValueChangedEvent = "Changed", ValueType = "string?")]
+[assembly: GenerateComponent(typeof(NSOutlineView))]
+[assembly: GenerateComponent(typeof(NSCollectionView))]
 
 [assembly: GeneratedProperty(typeof(NSTextField), "Editable", "IsEditable")]
 [assembly: GeneratedProperty(typeof(NSTextField), "Selectable", "IsSelectable")]
@@ -20,6 +24,7 @@ using BlazorAppKit.Generation;
 [assembly: GeneratedProperty(typeof(NSSlider), "Continuous", "IsContinuous")]
 
 [assembly: GeneratedEvent(typeof(NSTextField), "Changed", "StringValueChanged", IsValueChanged = true)]
+[assembly: GeneratedEvent(typeof(NSSearchField), "Changed", "StringValueChanged", IsValueChanged = true)]
 [assembly: GeneratedEvent(typeof(NSSlider), "Activated", "DoubleValueChanged", IsValueChanged = true)]
 
 namespace BlazorAppKit.Generation;
@@ -47,7 +52,12 @@ public enum GeneratedContainerKind
     /// <summary>
     /// Uses the first child as the native box's content view.
     /// </summary>
-    ContentView
+    ContentView,
+
+    /// <summary>
+    /// Places children in an AppKit split view and establishes its initial divider position.
+    /// </summary>
+    SplitView
 }
 
 /// <summary>

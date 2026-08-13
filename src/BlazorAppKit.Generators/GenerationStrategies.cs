@@ -178,8 +178,18 @@ internal sealed class ContainerGenerationStrategy : GenerationStrategy
             case 3:
                 source.AppendLine("        View.ContentView = children.Count == 0 ? default! : children[0].View;");
                 break;
-            default:
+            case 4:
                 source.AppendLine("        foreach (var child in children) View.AddSubview(child.View);");
+                source.AppendLine("        View.AdjustSubviews();");
+                source.AppendLine("        if (children.Count > 1) View.SetPositionOfDivider(240, global::System.IntPtr.Zero);");
+                break;
+            default:
+                source.AppendLine("        foreach (var child in children)");
+                source.AppendLine("        {");
+                source.AppendLine("            child.View.Frame = View.Bounds;");
+                source.AppendLine("            child.View.AutoresizingMask = global::AppKit.NSViewResizingMask.WidthSizable | global::AppKit.NSViewResizingMask.HeightSizable;");
+                source.AppendLine("            View.AddSubview(child.View);");
+                source.AppendLine("        }");
                 break;
         }
         source.AppendLine("    }");
