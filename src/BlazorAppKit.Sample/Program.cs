@@ -1,6 +1,3 @@
-using AppKit;
-using CoreGraphics;
-using Foundation;
 using System.Runtime.InteropServices;
 
 namespace BlazorAppKit.Sample;
@@ -125,19 +122,16 @@ internal sealed class RootViewController : NSViewController
     }
 }
 
-internal sealed class SidebarViewController : NSViewController
+internal sealed class SidebarViewController(SampleState state) : NSViewController
 {
-    private readonly SampleState _state;
     private NSSearchField? _searchField;
     private NSButton? _counterButton;
     private NSButton? _bindingButton;
 
-    public SidebarViewController(SampleState state) => _state = state;
-
     public override void LoadView()
     {
         _searchField = new NSSearchField { PlaceholderString = "Search" };
-        _searchField.Changed += (_, _) => _state.SetSearchText(_searchField.StringValue);
+        _searchField.Changed += (_, _) => state.SetSearchText(_searchField.StringValue);
 
         var pagesLabel = new NSTextField
         {
@@ -174,16 +168,15 @@ internal sealed class SidebarViewController : NSViewController
         };
 
         sidebar.AddSubview(pages);
-        NSLayoutConstraint.ActivateConstraints(new[]
-        {
+        NSLayoutConstraint.ActivateConstraints([
             pages.LeadingAnchor.ConstraintEqualTo(sidebar.LeadingAnchor),
             pages.TrailingAnchor.ConstraintEqualTo(sidebar.TrailingAnchor),
             pages.TopAnchor.ConstraintEqualTo(sidebar.TopAnchor)
-        });
+        ]);
 
         View = sidebar;
 
-        _state.Changed += OnStateChanged;
+        state.Changed += OnStateChanged;
         UpdateView();
     }
 
@@ -195,7 +188,7 @@ internal sealed class SidebarViewController : NSViewController
             Alignment = NSTextAlignment.Left,
             BezelStyle = NSBezelStyle.Recessed
         };
-        button.Activated += (_, _) => _state.SelectPage(page);
+        button.Activated += (_, _) => state.SelectPage(page);
         return button;
     }
 
@@ -206,7 +199,7 @@ internal sealed class SidebarViewController : NSViewController
         if (_searchField is null || _counterButton is null || _bindingButton is null)
             return;
 
-        var query = _state.SearchText.Trim();
+        var query = state.SearchText.Trim();
         _counterButton.Hidden = query.Length > 0 && !"counter".Contains(query, StringComparison.OrdinalIgnoreCase);
         _bindingButton.Hidden = query.Length > 0 && !"two-way binding".Contains(query, StringComparison.OrdinalIgnoreCase);
 
@@ -216,7 +209,7 @@ internal sealed class SidebarViewController : NSViewController
 
     private void UpdateButton(NSButton button, SamplePage page, string title)
     {
-        var selected = _state.CurrentPage == page;
+        var selected = state.CurrentPage == page;
         button.Title = selected ? $"●  {title}" : $"    {title}";
         button.Bordered = selected;
         button.BezelColor = selected ? NSColor.ControlAccent : null;
@@ -224,9 +217,8 @@ internal sealed class SidebarViewController : NSViewController
     }
 }
 
-internal sealed class ContentViewController : NSViewController
+internal sealed class ContentViewController(SampleState state) : NSViewController
 {
-    private readonly SampleState _state;
     private NSTextField? _counterTitle;
     private NSTextField? _counterDescription;
     private NSTextField? _countLabel;
@@ -237,8 +229,6 @@ internal sealed class ContentViewController : NSViewController
     private NSTextField? _boundNameLabel;
     private NSButton? _backButton;
     private NSButton? _forwardButton;
-
-    public ContentViewController(SampleState state) => _state = state;
 
     public override void LoadView()
     {
@@ -267,19 +257,17 @@ internal sealed class ContentViewController : NSViewController
         // from the page stack, which is the AppKit scroll-view pattern for a
         // vertically scrolling settings page.
         contentView.TranslatesAutoresizingMaskIntoConstraints = false;
-        NSLayoutConstraint.ActivateConstraints(new[]
-        {
+        NSLayoutConstraint.ActivateConstraints([
             contentView.LeadingAnchor.ConstraintEqualTo(scrollView.ContentView.LeadingAnchor),
             contentView.TrailingAnchor.ConstraintEqualTo(scrollView.ContentView.TrailingAnchor),
             contentView.TopAnchor.ConstraintEqualTo(scrollView.ContentView.TopAnchor),
             contentView.BottomAnchor.ConstraintEqualTo(scrollView.ContentView.BottomAnchor),
             contentView.WidthAnchor.ConstraintEqualTo(scrollView.ContentView.WidthAnchor)
-        });
+        ]);
 
         rootView.AddSubview(toolbarHost);
         rootView.AddSubview(scrollView);
-        NSLayoutConstraint.ActivateConstraints(new[]
-        {
+        NSLayoutConstraint.ActivateConstraints([
             toolbarHost.LeadingAnchor.ConstraintEqualTo(rootView.LeadingAnchor),
             toolbarHost.TrailingAnchor.ConstraintEqualTo(rootView.TrailingAnchor),
             toolbarHost.TopAnchor.ConstraintEqualTo(rootView.TopAnchor),
@@ -294,14 +282,14 @@ internal sealed class ContentViewController : NSViewController
             scrollView.TrailingAnchor.ConstraintEqualTo(rootView.TrailingAnchor),
             scrollView.TopAnchor.ConstraintEqualTo(toolbarHost.BottomAnchor),
             scrollView.BottomAnchor.ConstraintEqualTo(rootView.BottomAnchor)
-        });
+        ]);
 
         View = rootView;
-        _state.Changed += OnStateChanged;
+        state.Changed += OnStateChanged;
         UpdateView();
     }
 
-    private NSView BuildToolbar()
+    private NSStackView BuildToolbar()
     {
         _backButton = new NSButton
         {
@@ -309,7 +297,7 @@ internal sealed class ContentViewController : NSViewController
             BezelStyle = NSBezelStyle.TexturedRounded,
             Bordered = false
         };
-        _backButton.Activated += (_, _) => _state.SelectPage(SamplePage.Counter);
+        _backButton.Activated += (_, _) => state.SelectPage(SamplePage.Counter);
 
         _forwardButton = new NSButton
         {
@@ -317,7 +305,7 @@ internal sealed class ContentViewController : NSViewController
             BezelStyle = NSBezelStyle.TexturedRounded,
             Bordered = false
         };
-        _forwardButton.Activated += (_, _) => _state.SelectPage(SamplePage.Binding);
+        _forwardButton.Activated += (_, _) => state.SelectPage(SamplePage.Binding);
 
         var navigation = new NSStackView
         {
@@ -357,7 +345,7 @@ internal sealed class ContentViewController : NSViewController
         return toolbar;
     }
 
-    private NSView BuildContentView()
+    private NSStackView BuildContentView()
     {
         var page = new NSStackView
         {
@@ -381,7 +369,7 @@ internal sealed class ContentViewController : NSViewController
             Title = "Increment",
             BezelStyle = NSBezelStyle.Rounded
         };
-        _incrementButton.Activated += (_, _) => _state.Increment();
+        _incrementButton.Activated += (_, _) => state.Increment();
         var counterControls = HorizontalStack(_countLabel, _incrementButton);
         var counterControlsCard = BuildCard(12, new CGSize(18, 16), counterControls);
         counterControlsCard.SetContentHuggingPriorityForOrientation(1000, NSLayoutConstraintOrientation.Vertical);
@@ -393,10 +381,10 @@ internal sealed class ContentViewController : NSViewController
         {
             Editable = true,
             Bordered = true,
-            StringValue = _state.Name
+            StringValue = state.Name
         };
-        _nameField.Changed += (_, _) => _state.SetName(_nameField.StringValue);
-        _boundNameLabel = Label($"Bound value: {_state.Name}", 0, NSColor.SecondaryLabel);
+        _nameField.Changed += (_, _) => state.SetName(_nameField.StringValue);
+        _boundNameLabel = Label($"Bound value: {state.Name}", 0, NSColor.SecondaryLabel);
 
         var bindingBody = VerticalStack(
             Label("Name", 0, NSColor.Text),
@@ -423,14 +411,14 @@ internal sealed class ContentViewController : NSViewController
         if (_counterCard is null || _bindingCard is null || _countLabel is null || _nameField is null || _boundNameLabel is null)
             return;
 
-        var isCounter = _state.CurrentPage == SamplePage.Counter;
+        var isCounter = state.CurrentPage == SamplePage.Counter;
         _counterCard.Hidden = !isCounter;
         _bindingCard.Hidden = isCounter;
-        _countLabel.StringValue = $"Current count: {_state.CurrentCount}";
-        _boundNameLabel.StringValue = $"Bound value: {_state.Name}";
+        _countLabel.StringValue = $"Current count: {state.CurrentCount}";
+        _boundNameLabel.StringValue = $"Bound value: {state.Name}";
 
-        if (_nameField.StringValue != _state.Name)
-            _nameField.StringValue = _state.Name;
+        if (_nameField.StringValue != state.Name)
+            _nameField.StringValue = state.Name;
     }
 
     private static NSTextField Label(string text, int size, NSColor color)
