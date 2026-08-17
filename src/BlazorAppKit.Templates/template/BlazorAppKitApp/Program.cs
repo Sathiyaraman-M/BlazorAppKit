@@ -19,6 +19,8 @@ internal sealed class ApplicationDelegate : NSApplicationDelegate
 
     public override void DidFinishLaunching(NSNotification notification)
     {
+        _host = BlazorAppKitHost.Create();
+
         _window = new NSWindow(
             new CGRect(0, 0, 480, 280),
             NSWindowStyle.Titled |
@@ -27,15 +29,9 @@ internal sealed class ApplicationDelegate : NSApplicationDelegate
             NSBackingStore.Buffered,
             deferCreation: false)
         {
-            Title = "BlazorAppKitApp"
+            Title = "BlazorAppKitApp",
+            ContentViewController = _host.CreateRootViewController<App>()
         };
-
-        _host = BlazorAppKitHost.Create();
-
-        if (_window.ContentView is { } contentView)
-        {
-            _ = _host.MountRootComponentAsync<App>(contentView);
-        }
 
         _window.Center();
         _window.MakeKeyAndOrderFront(null);

@@ -65,6 +65,28 @@ public sealed class BlazorAppKitHost : IDisposable
         Renderer.MountRootComponentAsync<TComponent>(host, parameters);
 
     /// <summary>
+    /// Creates a native view controller that hosts a root Blazor view-controller component.
+    /// </summary>
+    /// <typeparam name="TComponent">The root view-controller component type.</typeparam>
+    /// <returns>A native controller suitable for <c>NSWindow.ContentViewController</c>.</returns>
+    public NSViewController CreateRootViewController<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>()
+        where TComponent : Components.NSViewControllerComponent =>
+        Renderer.CreateRootViewController<TComponent>();
+
+    /// <summary>
+    /// Creates a native view controller that hosts a parameterized root Blazor view-controller component.
+    /// </summary>
+    /// <typeparam name="TComponent">The root view-controller component type.</typeparam>
+    /// <param name="parameters">The parameters supplied to the root component.</param>
+    /// <returns>A native controller suitable for <c>NSWindow.ContentViewController</c>.</returns>
+    public NSViewController CreateRootViewController<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(
+        ParameterView parameters)
+        where TComponent : Components.NSViewControllerComponent =>
+        Renderer.CreateRootViewController<TComponent>(parameters);
+
+    /// <summary>
     /// Releases the renderer and service provider owned by this host.
     /// </summary>
     public void Dispose()

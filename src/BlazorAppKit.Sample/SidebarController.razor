@@ -1,0 +1,83 @@
+@using AppKit
+@using BlazorAppKit.Components
+@inherits NSViewControllerComponent
+
+<NSBox BoxType="@NSBoxType.NSBoxCustom"
+       BorderType="@NSBorderType.NoBorder"
+       FillColor="@NSColor.ControlBackground"
+       CornerRadius="12"
+       ContentViewMargins="@(new CoreGraphics.CGSize(14, 16))">
+    <NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Vertical"
+                 Alignment="@NSLayoutAttribute.Width"
+                 Distribution="@NSStackViewDistribution.Fill"
+                 Spacing="8">
+        <NSSearchField StringValue="@State.SearchText"
+                       StringValueChanged="SetSearchText"
+                       PlaceholderString="Search" />
+        <NSTextField StringValue="PAGES"
+                     IsEditable="false"
+                     IsBordered="false"
+                     DrawsBackground="false"
+                     TextColor="@NSColor.SecondaryLabel"
+                     Font="@NSFont.SystemFontOfSize(11)" />
+        @if (ShowPage(SamplePage.Counter))
+        {
+            <NSButton Title="@PageTitle(SamplePage.Counter)"
+                      Alignment="@NSTextAlignment.Left"
+                      Bordered="@IsSelected(SamplePage.Counter)"
+                      BezelStyle="@NSBezelStyle.Recessed"
+                      BezelColor="@SelectedColor(SamplePage.Counter)"
+                      ContentTintColor="@ItemColor(SamplePage.Counter)"
+                      Activated="@(() => SelectPage(SamplePage.Counter))" />
+        }
+        @if (ShowPage(SamplePage.Binding))
+        {
+            <NSButton Title="@PageTitle(SamplePage.Binding)"
+                      Alignment="@NSTextAlignment.Left"
+                      Bordered="@IsSelected(SamplePage.Binding)"
+                      BezelStyle="@NSBezelStyle.Recessed"
+                      BezelColor="@SelectedColor(SamplePage.Binding)"
+                      ContentTintColor="@ItemColor(SamplePage.Binding)"
+                      Activated="@(() => SelectPage(SamplePage.Binding))" />
+        }
+    </NSStackView>
+</NSBox>
+
+@code {
+    [Parameter, EditorRequired]
+    public SampleState State { get; set; } = null!;
+
+    protected override void OnInitialized()
+    {
+        State.Changed += OnStateChanged;
+    }
+
+    protected override void OnDispose()
+    {
+        State.Changed -= OnStateChanged;
+    }
+
+    private void OnStateChanged(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    private void SetSearchText(string? value) => State.SetSearchText(value ?? string.Empty);
+
+    private void SelectPage(SamplePage page) => State.SelectPage(page);
+
+    private bool ShowPage(SamplePage page)
+    {
+        var query = State.SearchText.Trim();
+        return query.Length == 0 || PageName(page).Contains(query, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool IsSelected(SamplePage page) => State.CurrentPage == page;
+
+    private NSColor ItemColor(SamplePage page) => IsSelected(page) ? NSColor.White : NSColor.Text;
+
+    private NSColor? SelectedColor(SamplePage page) => IsSelected(page) ? NSColor.ControlAccent : null;
+
+    private string PageTitle(SamplePage page) =>
+        $"{(IsSelected(page) ? "●  " : "    ")}{PageName(page)}";
+
+    private static string PageName(SamplePage page) =>
+        page == SamplePage.Counter ? "Counter" : "Two-way binding";
+}

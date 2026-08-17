@@ -1,4 +1,8 @@
 using BlazorAppKit.Abstractions;
+using BlazorAppKit.Components.Base;
+
+using BlazorViewController = BlazorAppKit.Components.BlazorViewController;
+using NSViewControllerComponent = BlazorAppKit.Components.NSViewControllerComponent;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -65,13 +69,59 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
         {
             var component = InstantiateComponent(typeof(TComponent));
             var componentId = AssignRootComponentId(component);
-            var node = new NativeNode(componentId, adapter: null, container: new RootViewHost(host));
+            NativeNode node;
 
-            _nodes.Add(componentId, node);
+            if (component is NSViewControllerComponent controllerComponent)
+            {
+                var adapter = new ViewControllerAdapter(
+                    controllerComponent,
+                    new BlazorViewController(controllerComponent));
+                node = new NativeNode(componentId, adapter, adapter);
+
+                // A controller root is still supported by the legacy direct
+                // view-mounting API. The new controller API uses the native
+                // root-controller host below.
+                _nodes.Add(componentId, node);
+                new RootViewHost(host).SetChildren([adapter]);
+            }
+            else
+            {
+                node = new NativeNode(componentId, adapter: null, container: new RootViewHost(host));
+                _nodes.Add(componentId, node);
+            }
 
             await RenderRootComponentAsync(componentId, parameters);
             return componentId;
         });
+    }
+
+    /// <summary>
+    /// Creates a native view controller that hosts a root Blazor view-controller component.
+    /// </summary>
+    /// <typeparam name="TComponent">The root view-controller component type.</typeparam>
+    /// <returns>A native controller suitable for <c>NSWindow.ContentViewController</c>.</returns>
+    public NSViewController CreateRootViewController<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>()
+        where TComponent : NSViewControllerComponent =>
+        CreateRootViewController<TComponent>(ParameterView.Empty);
+
+    /// <summary>
+    /// Creates a native view controller that hosts a parameterized root Blazor view-controller component.
+    /// </summary>
+    /// <typeparam name="TComponent">The root view-controller component type.</typeparam>
+    /// <param name="parameters">The parameters supplied to the root component.</param>
+    /// <returns>A native controller suitable for <c>NSWindow.ContentViewController</c>.</returns>
+    public NSViewController CreateRootViewController<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(
+        ParameterView parameters)
+        where TComponent : NSViewControllerComponent
+    {
+        var snapshot = SnapshotParameters(parameters);
+        return Dispatcher.InvokeAsync(() =>
+            (NSViewController)new BlazorViewController(controller =>
+                MountRootControllerComponentAsync<TComponent>(controller, snapshot)))
+            .GetAwaiter()
+            .GetResult();
     }
 
     /// <inheritdoc />
@@ -117,7 +167,12 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
             var child = EnsureNode(frame, frames.Array, frameIndex);
             seen.Add(child.ComponentId);
 
-            child.Parent ??= parent;
+            if (child.Parent is { } previousParent && !ReferenceEquals(previousParent, parent))
+            {
+                previousParent.Children.Remove(child);
+            }
+
+            child.Parent = parent;
 
             desiredChildren.Add(child);
         }
@@ -148,6 +203,8 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
         parent.Children.Clear();
         parent.Children.AddRange(desiredChildren);
 
+        UpdateControllerContainment(parent, desiredChildren);
+
         if (childrenChanged)
         {
             container.SetChildren([.. desiredChildren.Select(child => child.Adapter!).Cast<IViewAdapter>()]);
@@ -165,11 +222,81 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
             return existing;
         }
 
-        var adapter = AdapterResolver.Create(frame.ComponentType);
+        var component = GetComponentState(frame.ComponentId).Component;
+        var adapter = component is NSViewControllerComponent controllerComponent
+            ? new ViewControllerAdapter(controllerComponent, new BlazorViewController(controllerComponent))
+            : AdapterResolver.Create(frame.ComponentType);
         var node = new NativeNode(frame.ComponentId, adapter);
         _nodes.Add(node.ComponentId, node);
         ApplyParameters(adapter, frames, frameIndex + 1, frame.ComponentSubtreeLength - 1);
         return node;
+    }
+
+    private async Task MountRootControllerComponentAsync<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(
+        BlazorViewController viewController,
+        ParameterView parameters)
+        where TComponent : NSViewControllerComponent
+    {
+        try
+        {
+            await Dispatcher.InvokeAsync(async () =>
+            {
+                var component = InstantiateComponent(typeof(TComponent));
+                var componentId = AssignRootComponentId(component);
+                var adapter = new ViewControllerAdapter(component as TComponent
+                    ?? throw new InvalidOperationException($"Root component '{typeof(TComponent).FullName}' was not instantiated as expected."), viewController);
+                var node = new NativeNode(componentId, adapter, adapter);
+
+                _nodes.Add(componentId, node);
+                await RenderRootComponentAsync(componentId, parameters);
+            });
+        }
+        catch (Exception exception)
+        {
+            HandleException(exception);
+        }
+    }
+
+    private static ParameterView SnapshotParameters(ParameterView parameters)
+    {
+        var values = new Dictionary<string, object?>(StringComparer.Ordinal);
+        foreach (var parameter in parameters)
+        {
+            values[parameter.Name] = parameter.Value;
+        }
+
+        return ParameterView.FromDictionary(values);
+    }
+
+    private static void UpdateControllerContainment(
+        NativeNode parent,
+        IReadOnlyList<NativeNode> children)
+    {
+        var controllerParent = FindNearestController(parent)?.Adapter is IViewControllerAdapter parentAdapter
+            ? parentAdapter.ViewController
+            : null;
+
+        foreach (var child in children)
+        {
+            if (child.Adapter is IViewControllerAdapter controllerAdapter)
+            {
+                controllerAdapter.SetParentViewController(controllerParent);
+            }
+        }
+    }
+
+    private static NativeNode? FindNearestController(NativeNode node)
+    {
+        for (var current = node; current is not null; current = current.Parent)
+        {
+            if (current.Adapter is IViewControllerAdapter)
+            {
+                return current;
+            }
+        }
+
+        return null;
     }
 
     private static IEnumerable<int> EnumerateComponentFrames(

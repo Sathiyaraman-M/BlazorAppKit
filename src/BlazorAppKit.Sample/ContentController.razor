@@ -1,0 +1,119 @@
+@using AppKit
+@using BlazorAppKit.Components
+@inherits NSViewControllerComponent
+
+<NSScrollView HasVerticalScroller="true" BorderType="@NSBorderType.NoBorder">
+    <NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Vertical"
+                 Alignment="@NSLayoutAttribute.Width"
+                 Distribution="@NSStackViewDistribution.Fill"
+                 Spacing="14"
+                 EdgeInsets="@(new NSEdgeInsets(8, 22, 8, 22))">
+        @if (State.CurrentPage == SamplePage.Counter)
+        {
+            <NSBox BoxType="@NSBoxType.NSBoxCustom"
+                   BorderType="@NSBorderType.NoBorder"
+                   FillColor="@NSColor.ControlBackground"
+                   CornerRadius="14"
+                   ContentViewMargins="@(new CoreGraphics.CGSize(24, 20))">
+                <NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Vertical"
+                             Alignment="@NSLayoutAttribute.Width"
+                             Spacing="8">
+                    <NSTextField StringValue="Counter"
+                                 IsEditable="false"
+                                 IsBordered="false"
+                                 DrawsBackground="false"
+                                 Font="@NSFont.SystemFontOfSize(24)" />
+                    <NSTextField StringValue="A small counter page hosted inside a reusable controller boundary."
+                                 IsEditable="false"
+                                 IsBordered="false"
+                                 DrawsBackground="false"
+                                 TextColor="@NSColor.SecondaryLabel" />
+                </NSStackView>
+            </NSBox>
+            <NSBox BoxType="@NSBoxType.NSBoxCustom"
+                   BorderType="@NSBorderType.NoBorder"
+                   FillColor="@NSColor.ControlBackground"
+                   CornerRadius="12"
+                   ContentViewMargins="@(new CoreGraphics.CGSize(18, 16))">
+                <NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Horizontal"
+                             Alignment="@NSLayoutAttribute.CenterY"
+                             Spacing="14">
+                    <NSTextField StringValue="@($"Current count: {State.CurrentCount}")"
+                                 IsEditable="false"
+                                 IsBordered="false"
+                                 DrawsBackground="false" />
+                    <NSButton Title="Increment"
+                              BezelStyle="@NSBezelStyle.Rounded"
+                              Activated="Increment" />
+                </NSStackView>
+            </NSBox>
+        }
+        else
+        {
+            <NSBox BoxType="@NSBoxType.NSBoxCustom"
+                   BorderType="@NSBorderType.NoBorder"
+                   FillColor="@NSColor.ControlBackground"
+                   CornerRadius="14"
+                   ContentViewMargins="@(new CoreGraphics.CGSize(24, 20))">
+                <NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Vertical"
+                             Alignment="@NSLayoutAttribute.Width"
+                             Spacing="8">
+                    <NSTextField StringValue="Two-way binding"
+                                 IsEditable="false"
+                                 IsBordered="false"
+                                 DrawsBackground="false"
+                                 Font="@NSFont.SystemFontOfSize(24)" />
+                    <NSTextField StringValue="Changes in either control update the same application state."
+                                 IsEditable="false"
+                                 IsBordered="false"
+                                 DrawsBackground="false"
+                                 TextColor="@NSColor.SecondaryLabel" />
+                </NSStackView>
+            </NSBox>
+            <NSBox BoxType="@NSBoxType.NSBoxCustom"
+                   BorderType="@NSBorderType.NoBorder"
+                   FillColor="@NSColor.ControlBackground"
+                   CornerRadius="12"
+                   ContentViewMargins="@(new CoreGraphics.CGSize(18, 16))">
+                <NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Vertical"
+                             Alignment="@NSLayoutAttribute.Width"
+                             Spacing="8">
+                    <NSTextField StringValue="Name"
+                                 IsEditable="false"
+                                 IsBordered="false"
+                                 DrawsBackground="false" />
+                    <NSTextField StringValue="@State.Name"
+                                 StringValueChanged="SetName"
+                                 IsEditable="true"
+                                 IsBordered="true" />
+                    <NSTextField StringValue="@($"Bound value: {State.Name}")"
+                                 IsEditable="false"
+                                 IsBordered="false"
+                                 DrawsBackground="false"
+                                 TextColor="@NSColor.SecondaryLabel" />
+                </NSStackView>
+            </NSBox>
+        }
+    </NSStackView>
+</NSScrollView>
+
+@code {
+    [Parameter, EditorRequired]
+    public SampleState State { get; set; } = null!;
+
+    protected override void OnInitialized()
+    {
+        State.Changed += OnStateChanged;
+    }
+
+    protected override void OnDispose()
+    {
+        State.Changed -= OnStateChanged;
+    }
+
+    private void OnStateChanged(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    private void Increment() => State.Increment();
+
+    private void SetName(string? value) => State.SetName(value ?? string.Empty);
+}
