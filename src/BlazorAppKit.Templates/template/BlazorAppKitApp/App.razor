@@ -2,7 +2,8 @@
 @using BlazorAppKit.Components
 @inherits NSViewControllerComponent
 
-<NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Vertical" Spacing="12">
+<NSStackView Layout="@NSViewLayoutOptions.Fill"
+             Orientation="@NSUserInterfaceLayoutOrientation.Vertical" Spacing="12">
     <NSTextField StringValue="Welcome to BlazorAppKit" IsEditable="false" IsBordered="false" DrawsBackground="false" />
     <NSTextField StringValue="Current count: @currentCount" IsEditable="false" IsBordered="false" DrawsBackground="false" />
     <NSButton Title="Increment" Activated="Increment" />

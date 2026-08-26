@@ -160,63 +160,7 @@ internal sealed class ContainerGenerationStrategy : GenerationStrategy
         source.AppendLine();
         source.AppendLine("    public void SetChildren(global::System.Collections.Generic.IReadOnlyList<global::BlazorAppKit.Abstractions.IViewAdapter> children)");
         source.AppendLine("    {");
-        source.AppendLine("        foreach (var child in children) child.View.RemoveFromSuperview();");
-        switch (context.Control.ContainerKind)
-        {
-            case 1:
-                source.AppendLine("        foreach (var child in children)");
-                source.AppendLine("        {");
-                source.AppendLine("            // NSStackView owns the arranged subview constraints.");
-                source.AppendLine("            child.View.TranslatesAutoresizingMaskIntoConstraints = false;");
-                source.AppendLine("            View.AddArrangedSubview(child.View);");
-                source.AppendLine("        }");
-                break;
-            case 2:
-                source.AppendLine("        var documentView = children.Count == 0 ? default(global::AppKit.NSView) : children[0].View;");
-                source.AppendLine("        View.DocumentView = documentView!;");
-                source.AppendLine("        if (documentView is not null)");
-                source.AppendLine("        {");
-                source.AppendLine("            // The document view is frame-sized by the scroll view.");
-                source.AppendLine("            documentView.TranslatesAutoresizingMaskIntoConstraints = true;");
-                source.AppendLine("            documentView.Frame = View.Bounds;");
-                source.AppendLine("            documentView.AutoresizingMask = global::AppKit.NSViewResizingMask.WidthSizable | global::AppKit.NSViewResizingMask.HeightSizable;");
-                source.AppendLine("        }");
-                break;
-            case 3:
-                source.AppendLine("        var contentView = children.Count == 0 ? default(global::AppKit.NSView) : children[0].View;");
-                source.AppendLine("        View.ContentView = contentView!;");
-                source.AppendLine("        if (contentView is not null)");
-                source.AppendLine("        {");
-                source.AppendLine("            // NSBox owns the inset content bounds.");
-                source.AppendLine("            contentView.TranslatesAutoresizingMaskIntoConstraints = true;");
-                source.AppendLine("            contentView.AutoresizingMask = global::AppKit.NSViewResizingMask.WidthSizable | global::AppKit.NSViewResizingMask.HeightSizable;");
-                source.AppendLine("        }");
-                break;
-            case 4:
-                source.AppendLine("        foreach (var child in children)");
-                source.AppendLine("        {");
-                source.AppendLine("            // NSSplitView owns pane frames; its children remain frame-based.");
-                source.AppendLine("            child.View.TranslatesAutoresizingMaskIntoConstraints = true;");
-                source.AppendLine("            child.View.AutoresizingMask = global::AppKit.NSViewResizingMask.HeightSizable;");
-                source.AppendLine("            View.AddSubview(child.View);");
-                source.AppendLine("        }");
-                source.AppendLine("        View.AdjustSubviews();");
-                source.AppendLine("        if (children.Count > 1)");
-                source.AppendLine("        {");
-                source.AppendLine("            var dividerPosition = new global::System.Runtime.InteropServices.NFloat(global::System.Math.Clamp(240, 0, global::System.Math.Max(0, View.Bounds.Width - 1)));");
-                source.AppendLine("            View.SetPositionOfDivider(dividerPosition, global::System.IntPtr.Zero);");
-                source.AppendLine("            View.AdjustSubviews();");
-                source.AppendLine("        }");
-                break;
-            default:
-                source.AppendLine("        foreach (var child in children)");
-                source.AppendLine("        {");
-                source.AppendLine("            child.View.Frame = View.Bounds;");
-                source.AppendLine("            child.View.AutoresizingMask = global::AppKit.NSViewResizingMask.WidthSizable | global::AppKit.NSViewResizingMask.HeightSizable;");
-                source.AppendLine("            View.AddSubview(child.View);");
-                source.AppendLine("        }");
-                break;
-        }
+        source.AppendLine($"        global::BlazorAppKit.Components.Base.NativeLayoutEngine.Update(View, LayoutState, (global::BlazorAppKit.Generation.GeneratedContainerKind){context.Control.ContainerKind}, children);");
         source.AppendLine("    }");
     }
 }

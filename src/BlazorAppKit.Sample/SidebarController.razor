@@ -2,7 +2,8 @@
 @using BlazorAppKit.Components
 @inherits NSViewControllerComponent
 
-<NSBox BoxType="@NSBoxType.NSBoxCustom"
+<NSBox Layout="@NSViewLayoutOptions.Fill"
+       BoxType="@NSBoxType.NSBoxCustom"
        BorderType="@NSBorderType.NoBorder"
        FillColor="@NSColor.ControlBackground"
        CornerRadius="12"
@@ -40,6 +41,7 @@
                       ContentTintColor="@ItemColor(SamplePage.Binding)"
                       Activated="@(() => SelectPage(SamplePage.Binding))" />
         }
+        <NSView Layout="@NSViewLayoutOptions.Spacer" />
     </NSStackView>
 </NSBox>
 
@@ -75,8 +77,7 @@
 
     private NSColor? SelectedColor(SamplePage page) => IsSelected(page) ? NSColor.ControlAccent : null;
 
-    private string PageTitle(SamplePage page) =>
-        $"{(IsSelected(page) ? "●  " : "    ")}{PageName(page)}";
+    private string PageTitle(SamplePage page) => PageName(page);
 
     private static string PageName(SamplePage page) =>
         page == SamplePage.Counter ? "Counter" : "Two-way binding";

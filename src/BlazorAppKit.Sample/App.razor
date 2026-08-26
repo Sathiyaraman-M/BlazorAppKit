@@ -2,7 +2,8 @@
 @using BlazorAppKit.Components
 @inherits NSViewControllerComponent
 
-<NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Vertical"
+<NSStackView Layout="@NSViewLayoutOptions.Fill"
+             Orientation="@NSUserInterfaceLayoutOrientation.Vertical"
              Alignment="@NSLayoutAttribute.Width"
              Distribution="@NSStackViewDistribution.Fill"
              Spacing="12"
@@ -19,8 +20,10 @@
                      Font="@NSFont.SystemFontOfSize(15)" />
     </NSStackView>
 
-    <NSSplitView IsVertical="true" DividerStyle="@NSSplitViewDividerStyle.Thin">
-        <SidebarController State="_state" />
+    <NSSplitView Layout="@NSViewLayoutOptions.Spacer"
+                 IsVertical="true" DividerStyle="@NSSplitViewDividerStyle.Thin">
+        <SidebarController State="_state"
+                           Layout="@NSViewLayoutOptions.Fill.WithWidth(new System.Runtime.InteropServices.NFloat(260), new System.Runtime.InteropServices.NFloat(220), new System.Runtime.InteropServices.NFloat(320))" />
         <ContentController State="_state" />
     </NSSplitView>
 </NSStackView>

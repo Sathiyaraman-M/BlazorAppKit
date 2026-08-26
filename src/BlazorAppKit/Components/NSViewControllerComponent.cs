@@ -16,6 +16,13 @@ public abstract class NSViewControllerComponent : ComponentBase, IDisposable
     private bool _disposed;
 
     /// <summary>
+    /// Gets or sets the semantic layout intent used when this controller is placed
+    /// inside a native container.
+    /// </summary>
+    [Parameter]
+    public NSViewLayoutOptions Layout { get; set; } = NSViewLayoutOptions.Fill;
+
+    /// <summary>
     /// Gets the native view controller owned by this component.
     /// </summary>
     public NSViewController ViewController => _viewController

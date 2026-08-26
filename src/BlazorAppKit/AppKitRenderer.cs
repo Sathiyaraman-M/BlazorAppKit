@@ -160,12 +160,22 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
         var frames = GetCurrentRenderTreeFrames(componentId);
         var seen = new HashSet<int>();
         var desiredChildren = new List<NativeNode>();
+        var childrenLayoutChanged = false;
 
         foreach (var frameIndex in EnumerateComponentFrames(frames.Array, 0, frames.Count))
         {
             var frame = frames.Array[frameIndex];
+            var previousLayout = _nodes.TryGetValue(frame.ComponentId, out var existingNode)
+                ? existingNode.Adapter?.Layout
+                : null;
             var child = EnsureNode(frame, frames.Array, frameIndex);
             seen.Add(child.ComponentId);
+
+            if (previousLayout is { } previous && child.Adapter is { } childAdapter &&
+                previous != childAdapter.Layout)
+            {
+                childrenLayoutChanged = true;
+            }
 
             if (child.Parent is { } previousParent && !ReferenceEquals(previousParent, parent))
             {
@@ -205,7 +215,7 @@ public class AppKitRenderer(IServiceProvider serviceProvider, ILoggerFactory log
 
         UpdateControllerContainment(parent, desiredChildren);
 
-        if (childrenChanged)
+        if (childrenChanged || childrenLayoutChanged)
         {
             container.SetChildren([.. desiredChildren.Select(child => child.Adapter!).Cast<IViewAdapter>()]);
         }

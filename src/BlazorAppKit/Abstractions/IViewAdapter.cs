@@ -6,7 +6,9 @@ internal interface IViewAdapter : IDisposable
 {
     NSView View { get; }
 
-    void ApplyParameters(ParameterView parameters);
+    Components.NSViewLayoutOptions Layout { get; }
+
+    bool ApplyParameters(ParameterView parameters);
 }
 
 internal interface IViewAdapter<out TView> : IViewAdapter

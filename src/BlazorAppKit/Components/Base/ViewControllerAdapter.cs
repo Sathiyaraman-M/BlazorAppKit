@@ -7,6 +7,7 @@ namespace BlazorAppKit.Components.Base;
 internal sealed class ViewControllerAdapter : IViewAdapter, IViewContainer, IViewControllerAdapter
 {
     private bool _disposed;
+    private readonly NativeLayoutState _layoutState = new();
 
     public ViewControllerAdapter(
         NSViewControllerComponent component,
@@ -23,28 +24,21 @@ internal sealed class ViewControllerAdapter : IViewAdapter, IViewContainer, IVie
 
     public AppKit.NSView View => ViewController.View;
 
+    public NSViewLayoutOptions Layout => Component.Layout;
+
     AppKit.NSView IViewAdapter.View => View;
 
-    public void ApplyParameters(ParameterView parameters)
+    public bool ApplyParameters(ParameterView parameters)
     {
         // Blazor applies parameters to the controller component itself. Unlike
         // generated native-view components, the controller adapter has no
         // separate native property bag to synchronize.
+        return false;
     }
 
     public void SetChildren(IReadOnlyList<IViewAdapter> children)
     {
-        foreach (var child in View.Subviews)
-        {
-            child.RemoveFromSuperview();
-        }
-
-        foreach (var child in children)
-        {
-            child.View.Frame = View.Bounds;
-            child.View.AutoresizingMask = NSViewResizingMask.WidthSizable | NSViewResizingMask.HeightSizable;
-            View.AddSubview(child.View);
-        }
+        NativeLayoutEngine.UpdateRoot(View, _layoutState, children);
     }
 
     public void SetParentViewController(NSViewController? parent)
@@ -68,6 +62,7 @@ internal sealed class ViewControllerAdapter : IViewAdapter, IViewContainer, IVie
         _disposed = true;
         ViewController.RemoveFromParentViewController();
         View.RemoveFromSuperview();
+        _layoutState.Dispose();
         ViewController.Dispose();
     }
 }

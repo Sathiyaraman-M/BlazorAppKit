@@ -2,7 +2,8 @@
 @using BlazorAppKit.Components
 @inherits NSViewControllerComponent
 
-<NSScrollView HasVerticalScroller="true" BorderType="@NSBorderType.NoBorder">
+<NSScrollView Layout="@NSViewLayoutOptions.Fill"
+              HasVerticalScroller="true" BorderType="@NSBorderType.NoBorder">
     <NSStackView Orientation="@NSUserInterfaceLayoutOrientation.Vertical"
                  Alignment="@NSLayoutAttribute.Width"
                  Distribution="@NSStackViewDistribution.Fill"
@@ -94,6 +95,7 @@
                 </NSStackView>
             </NSBox>
         }
+        <NSView Layout="@NSViewLayoutOptions.Spacer" />
     </NSStackView>
 </NSScrollView>
 

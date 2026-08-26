@@ -23,7 +23,7 @@ internal static class ComponentSourceGenerator
         source.AppendLine();
         DocumentationUtilities.Append(source, context.Documentation, control.Type,
             $"Blazor component wrapper for AppKit.{control.Name}.", indentation: 0);
-        source.AppendLine($"public sealed class {control.Name} : global::Microsoft.AspNetCore.Components.ComponentBase");
+        source.AppendLine($"public sealed class {control.Name} : global::BlazorAppKit.Components.NSViewComponent");
         source.AppendLine("{");
         foreach (var strategy in active) strategy.AppendComponentMembers(source, context);
         source.AppendLine();
@@ -72,15 +72,20 @@ internal static class ComponentSourceGenerator
     {
         var control = context.Control;
         source.AppendLine();
-        source.AppendLine("    public override void ApplyParameters(global::Microsoft.AspNetCore.Components.ParameterView parameters)");
+        source.AppendLine("    public override bool ApplyParameters(global::Microsoft.AspNetCore.Components.ParameterView parameters)");
         source.AppendLine("    {");
+        source.AppendLine("        var layoutChanged = false;");
         source.AppendLine("        foreach (var parameter in parameters)");
         source.AppendLine("        {");
         source.AppendLine("            switch (parameter.Name)");
         source.AppendLine("            {");
+        source.AppendLine("                case \"Layout\" when parameter.Value is global::BlazorAppKit.Components.NSViewLayoutOptions layout:");
+        source.AppendLine("                    layoutChanged = ApplyLayout(layout) || layoutChanged;");
+        source.AppendLine("                    break;");
         foreach (var strategy in strategies) strategy.AppendApplyParameterCases(source, context);
         source.AppendLine("            }");
         source.AppendLine("        }");
+        source.AppendLine("        return layoutChanged;");
         source.AppendLine("    }");
     }
 }
